@@ -1,8 +1,8 @@
 {
   "id": "kia.menu",
   "name": "Edit Menu",
-  "summary": "Hide and reorder every All Menus entry, Kia's own included",
-  "description": "A launcher-style grid for Kia's All Menus: drag to reorder, tap the cross to hide, \"Add apps\" to bring entries back. It needs the kia-menu launcher hook, which is built from your own car's stock launcher and installed separately (see the homepage); without the hook, Edit Menu has nothing to edit.",
+  "summary": "Hide and reorder your All Menus",
+  "description": "Choose which apps show up in All Menus, and in what order.",
   "author": "hazptr",
   "homepage": "https://github.com/hazptr/kia-menu",
   "icon": "https://raw.githubusercontent.com/hazptr/kia-menu/2a6e1c822cba6d64350d0afeb46d7f24148c98bd/icon.png",

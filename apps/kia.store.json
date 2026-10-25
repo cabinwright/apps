@@ -1,8 +1,8 @@
 {
   "id": "kia.store",
   "name": "App Store",
-  "summary": "Install, update and remove apps from this index, on the car",
-  "description": "Browse and install NEMESIS packages from the signed kia-apps index. Every download is checked against the index's SHA-256, and the index itself must be signed by a pinned key, newer than the last one seen and not expired. Before installing it says in plain words what a package does. Installs run through a small root helper. The App Store shows up in All Menus with the kia-menu launcher hook installed.",
+  "summary": "Get more apps for your car",
+  "description": "Install, update and remove apps for your car.",
   "author": "hazptr",
   "homepage": "https://github.com/hazptr/kia-store",
   "icon": "https://raw.githubusercontent.com/hazptr/kia-store/4eae9f3a5f3db7bd18a908b99bc566f265aace9b/icon.png",

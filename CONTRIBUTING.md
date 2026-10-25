@@ -27,18 +27,18 @@ sha256sum pkg.zip          # macOS: shasum -a 256 pkg.zip
 
 ```json
 {
-  "id": "ev6.fixes",
-  "name": "EV6 fixes",
-  "summary": "eth0 guard, Android Auto recovery and a Status app",
-  "description": "Longer plain text, shown on the app's page.",
+  "id": "kia.tweaks",
+  "name": "Tweaks",
+  "summary": "Small fixes, each with an on/off switch",
+  "description": "Turn on fixes like automatic daylight saving time and skipping the start-up screen.",
   "author": "hazptr",
-  "homepage": "https://github.com/hazptr/ev6-fixes",
+  "homepage": "https://github.com/hazptr/kia-tweaks",
   "category": "fixes",
-  "icon": "https://raw.githubusercontent.com/hazptr/ev6-fixes/v1.4/status/icon.png",
+  "icon": "https://raw.githubusercontent.com/hazptr/kia-tweaks/<commit>/icon.png",
   "versions": [
     {
-      "version": "1.4",
-      "url": "https://github.com/hazptr/ev6-fixes/releases/download/v1.4/ev6.fixes-v1.4.zip",
+      "version": "1.0",
+      "url": "https://github.com/hazptr/kia-tweaks/releases/download/v1.0/kia.tweaks-v1.0.zip",
       "sha256": "<64 hex digits>",
       "firmware": ["CVEV.USA.0000.V015.012.260507"],
       "requires": ["kia.menu>=1.1"],
@@ -50,7 +50,10 @@ sha256sum pkg.zip          # macOS: shasum -a 256 pkg.zip
 
 - `id`: the NEMESIS package id; the file must be named `<id>.json`.
 - `category`: one of `fixes`, `apps`, `projection`, `system`, `tools`, `fun`.
-- `description`, `homepage`, `icon` are optional. The icon is a PNG of at most 256x256 and
+- `summary` and `description` are for drivers, not developers: say what the app does for them, in
+  plain words, a short phrase and one sentence. Leave out how it works; the store already shows
+  what a package installs and changes (apps, root services, `/system` writes) from the review.
+- `description`, `homepage`, `icon` are optional. Pin `icon` to a commit or tag so it can't change. The icon is a PNG of at most 256x256 and
   64 KiB, over https.
 - `versions`: newest first. You may keep older versions listed; the store installs the newest
   one that fits the car's firmware. Every version needs `version`, `url`, `sha256` and
