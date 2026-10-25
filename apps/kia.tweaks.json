@@ -5,6 +5,7 @@
   "description": "One app with an on/off switch per tweak. Automatic daylight saving time flips Kia's own setting on the US/Canada schedule. Skip start-up screen goes straight to the home screen without the consent / driver screen (it changes SystemUI on /system, rebuilt on the car from its own stock files, backed up first and restored exactly when switched off; needs a restart). Recover stuck wireless Android Auto restarts Kia's receiver when it gets stuck after the car's hotspot was used. Keep wireless projection working with ADB TCP stops the Engineering Mode ADB TCP switch from breaking wireless Android Auto and CarPlay. The Tweaks app shows up in All Menus with the kia-menu launcher hook installed.",
   "author": "hazptr",
   "homepage": "https://github.com/hazptr/kia-tweaks",
+  "icon": "https://raw.githubusercontent.com/hazptr/kia-tweaks/9a502e55862ac099be8d05deeaa47ae7f745398e/icon.png",
   "category": "fixes",
   "versions": [
     {
