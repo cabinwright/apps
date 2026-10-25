@@ -5,13 +5,13 @@
   "description": "Choose which icons show up on your home screen, and in what order.",
   "author": "hazptr",
   "homepage": "https://github.com/hazptr/kia-menu",
-  "icon": "https://raw.githubusercontent.com/hazptr/kia-menu/2a6e1c822cba6d64350d0afeb46d7f24148c98bd/icon.png",
+  "icon": "https://raw.githubusercontent.com/hazptr/kia-menu/5fc0c4e47de87acb9f7cd0a67f7c89a9dbba22d0/icon.png",
   "category": "tools",
   "versions": [
     {
       "version": "1.1",
       "url": "https://github.com/hazptr/kia-menu/releases/download/v1.1/kia.menu-v1.1.zip",
-      "sha256": "85df8fb94fd7fb614d4178b03726469fe506ddde29a2f101f68aa2b1351ec9ed",
+      "sha256": "bcefd8d657a5d16da6fb4680ab3a447bc12fff966947d16bf93495cf092a2b63",
       "firmware": [
         "*"
       ],

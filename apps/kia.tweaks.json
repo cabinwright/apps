@@ -5,13 +5,22 @@
   "description": "Turn on fixes like automatic daylight saving time and skipping the start-up screen.",
   "author": "hazptr",
   "homepage": "https://github.com/hazptr/kia-tweaks",
-  "icon": "https://raw.githubusercontent.com/hazptr/kia-tweaks/9a502e55862ac099be8d05deeaa47ae7f745398e/icon.png",
+  "icon": "https://raw.githubusercontent.com/hazptr/kia-tweaks/e28ed0850cd0932377c18926e53de1064c977ef9/icon.png",
   "category": "fixes",
   "versions": [
     {
+      "version": "1.1",
+      "url": "https://github.com/hazptr/kia-tweaks/releases/download/v1.1/kia.tweaks-v1.1.zip",
+      "sha256": "2da24d3437ebc28bb45813aae1cd07ce1ffc9fb91fe4b095ad145031f73e7340",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "notes": "Simpler descriptions for every tweak."
+    },
+    {
       "version": "1.0",
       "url": "https://github.com/hazptr/kia-tweaks/releases/download/v1.0/kia.tweaks-v1.0.zip",
-      "sha256": "e872472729fdb7b1501619d7814131371c6715264e3079fac26a325fc3411686",
+      "sha256": "c57082a4dec8203c3f8953ab12a253e100c4964e99561ffe3c7e1c0e91ec13c1",
       "firmware": [
         "CVEV.USA.0000.V015.012.260507"
       ],
