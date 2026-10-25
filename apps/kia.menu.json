@@ -10,8 +10,10 @@
     {
       "version": "1.1",
       "url": "https://github.com/hazptr/kia-menu/releases/download/v1.1/kia.menu-v1.1.zip",
-      "sha256": "TODO: sha256 of the v1.1 release asset",
-      "firmware": ["*"],
+      "sha256": "85df8fb94fd7fb614d4178b03726469fe506ddde29a2f101f68aa2b1351ec9ed",
+      "firmware": [
+        "*"
+      ],
       "notes": "First release in the store."
     }
   ]

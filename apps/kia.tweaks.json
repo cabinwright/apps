@@ -1,0 +1,20 @@
+{
+  "id": "kia.tweaks",
+  "name": "Tweaks",
+  "summary": "Switchable fixes and tweaks: automatic daylight saving, skip the start-up screen, wireless Android Auto fixes",
+  "description": "One app with an on/off switch per tweak. Automatic daylight saving time flips Kia's own setting on the US/Canada schedule. Skip start-up screen goes straight to the home screen without the consent / driver screen (it changes SystemUI on /system, rebuilt on the car from its own stock files, backed up first and restored exactly when switched off; needs a restart). Recover stuck wireless Android Auto restarts Kia's receiver when it gets stuck after the car's hotspot was used. Keep wireless projection working with ADB TCP stops the Engineering Mode ADB TCP switch from breaking wireless Android Auto and CarPlay. The Tweaks app shows up in All Menus with the kia-menu launcher hook installed.",
+  "author": "hazptr",
+  "homepage": "https://github.com/hazptr/kia-tweaks",
+  "category": "fixes",
+  "versions": [
+    {
+      "version": "1.0",
+      "url": "https://github.com/hazptr/kia-tweaks/releases/download/v1.0/kia.tweaks-v1.0.zip",
+      "sha256": "e872472729fdb7b1501619d7814131371c6715264e3079fac26a325fc3411686",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "notes": "First release: replaces ev6.fixes (eth0 guard and Android Auto recovery are now tweaks)."
+    }
+  ]
+}
