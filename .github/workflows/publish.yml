@@ -1,0 +1,72 @@
+name: publish
+
+# Builds, signs and publishes index.json to gh-pages. Weekly as well, so a quiet index is
+# re-signed long before its 90-day expiry. Only ever from main: that's what the owner merged.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+env:
+  KEY_ID: kia-apps-2026a
+  BASE_URL: https://hazptr.github.io/kia-apps/
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Tools
+        run: pip install --disable-pip-version-check 'cryptography==44.0.0'
+
+      - name: Tests
+        run: python3 -m unittest discover -s tests
+
+      - name: gh-pages checkout
+        run: |
+          if git fetch -q origin gh-pages; then
+            git worktree add -q pages origin/gh-pages
+            git -C pages checkout -q -B gh-pages
+            first=
+          else
+            git worktree add -q --detach pages
+            git -C pages checkout -q --orphan gh-pages
+            git -C pages rm -rfq .
+            first=--first
+          fi
+          echo "FIRST=$first" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: python3 tools/build_index.py --apps apps --pages pages --key-id "$KEY_ID" --base-url "$BASE_URL" $FIRST
+
+      - name: Sign
+        env:
+          INDEX_SIGNING_KEY: ${{ secrets.INDEX_SIGNING_KEY }}
+        run: |
+          python3 tools/sign_index.py pages/index.json --key-env INDEX_SIGNING_KEY
+          python3 tools/sign_index.py pages/index.json --verify
+
+      - name: Commit
+        run: |
+          cd pages
+          touch .nojekyll
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898099+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "index $(python3 -c 'import json; print(json.load(open("index.json"))["sequence"])') from ${GITHUB_SHA::12}"
+          git push -q origin gh-pages

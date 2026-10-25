@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+/pages/
+# private keys never belong here; the vectors' test key is the one exception
+*.pem
+!keys/*.pub.pem
+!tests/vectors/*.pem

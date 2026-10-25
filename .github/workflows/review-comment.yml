@@ -1,0 +1,67 @@
+name: review-comment
+
+# Posts the review computed by check.yml as one PR comment and sets the review labels.
+# Runs from the default branch with write access, so it treats the artifact as untrusted
+# text: it never executes it, finds the PR itself, allows only the known labels, and posts
+# nothing if the PR touches files outside apps/ (such a PR could have changed check.yml and
+# written the artifact itself).
+
+on:
+  workflow_run:
+    workflows: [check]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: review
+          path: review
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Post
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # the PR whose head is the commit that was checked (fork PRs aren't in the event)
+          pr=$(gh api --paginate "repos/$REPO/pulls?state=open&per_page=100" \
+            --jq ".[] | select(.head.sha == \"$HEAD_SHA\") | .number" | head -n1)
+          if [ -z "$pr" ]; then echo "no open PR for $HEAD_SHA"; exit 0; fi
+
+          outside=$(gh api --paginate "repos/$REPO/pulls/$pr/files?per_page=100" --jq '.[].filename' \
+            | grep -v '^apps/' || true)
+          if [ -n "$outside" ]; then
+            printf '<!-- kia-apps-review -->\n## kia-apps review\n\n:x: This PR changes files outside apps/, so no review is posted. A PR may only change apps/<id>.json files.\n' > body.md
+            : > review/labels
+          else
+            head -c 60000 review/comment.md > body.md
+          fi
+
+          id=$(gh api --paginate "repos/$REPO/issues/$pr/comments?per_page=100" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- kia-apps-review -->"))) | .id' | head -n1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@body.md > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$pr/comments" -F body=@body.md > /dev/null
+          fi
+
+          for label in root system-writes needs-firmware-match; do
+            if grep -qx "$label" review/labels; then
+              gh label create "$label" --repo "$REPO" --color d93f0b --force > /dev/null
+              gh api -X POST "repos/$REPO/issues/$pr/labels" -f "labels[]=$label" > /dev/null
+            else
+              gh api -X DELETE "repos/$REPO/issues/$pr/labels/$label" > /dev/null 2>&1 || true
+            fi
+          done

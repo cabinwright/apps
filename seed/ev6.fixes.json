@@ -1,0 +1,18 @@
+{
+  "id": "ev6.fixes",
+  "name": "EV6 fixes",
+  "summary": "eth0 guard, Android Auto recovery and a Status app",
+  "description": "Three small services for the 2023 EV6 head unit. eth0-guard: with the stock ADB over TCP switch on, eth0 gets 192.168.0.123/24, which overlaps the projection hotspot and breaks wireless Android Auto; it narrows that to /32. aa-recover: after the car's own Wi-Fi hotspot has been used, the stock Android Auto receiver can get stuck; it restarts it. status: writes a status snapshot every 3 s for the Status app, which shows Android Auto, Wi-Fi, ADB, Leafia and recent fixes (in All Menus when the kia-menu launcher hook is installed).",
+  "author": "hazptr",
+  "homepage": "https://github.com/hazptr/ev6-fixes",
+  "category": "fixes",
+  "versions": [
+    {
+      "version": "1.4",
+      "url": "https://github.com/hazptr/ev6-fixes/releases/download/v1.4/ev6.fixes-v1.4.zip",
+      "sha256": "TODO: sha256 of the v1.4 release asset",
+      "firmware": ["CVEV.USA.0000.V015.012.260507"],
+      "notes": "First release in the store."
+    }
+  ]
+}

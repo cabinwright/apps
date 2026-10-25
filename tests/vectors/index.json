@@ -1,0 +1,95 @@
+{
+  "format": 1,
+  "sequence": 42,
+  "generated": "2026-10-25T18:00:00Z",
+  "expires": "2027-01-23T18:00:00Z",
+  "key_id": "kia-apps-test",
+  "apps": [
+    {
+      "id": "ev6.fixes",
+      "name": "EV6 fixes",
+      "summary": "A test",
+      "description": "",
+      "author": "someone",
+      "homepage": "",
+      "category": "fixes",
+      "versions": [
+        {
+          "version": "1.4",
+          "url": "https://github.com/o/r/releases/download/v1.4/p-1.4.zip",
+          "sha256": "f77ce131fa54e148c753ee6db84bc6d52dbd65a69d6190542dee51eee168377f",
+          "size": 1112,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "kia.menu>=1.1"
+          ],
+          "notes": "Caf\u00e9 \"quotes\" and a\nnewline.",
+          "review": {
+            "types": [
+              "application",
+              "service"
+            ],
+            "apps": [
+              {
+                "package": "dev.test",
+                "version_code": 3
+              }
+            ],
+            "services": [
+              {
+                "name": "eth0-guard",
+                "uid": "root",
+                "mode": "restart"
+              }
+            ],
+            "root_services": [
+              "eth0-guard"
+            ],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "kia.menu",
+      "name": "Edit Menu",
+      "summary": "A test",
+      "description": "",
+      "author": "someone",
+      "homepage": "",
+      "category": "tools",
+      "versions": [
+        {
+          "version": "1.1",
+          "url": "https://github.com/o/r/releases/download/v1.1/p-1.1.zip",
+          "sha256": "fcc7c0995338873bb312a68328ba1960d12550ad399eaeacaaa455bc4cfef1bf",
+          "size": 894,
+          "firmware": [
+            "*"
+          ],
+          "requires": [],
+          "notes": "",
+          "review": {
+            "types": [
+              "application",
+              "service"
+            ],
+            "apps": [
+              {
+                "package": "dev.test",
+                "version_code": 3
+              }
+            ],
+            "services": [],
+            "root_services": [],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    }
+  ]
+}
