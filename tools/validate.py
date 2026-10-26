@@ -624,20 +624,22 @@ NOT_TWEAK_KEYS = {
                 "when it leaves its package",
 }
 NEEDS = {
-    "file": re.compile(r"^file:(/[^\s@|]+)@([0-9a-f]{32}(?:,[0-9a-f]{32})*)$"),
+    "file": re.compile(r"^file:(/[^\s@|]+)@((?:[0-9a-f]{32}|absent|link:/?[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)(?:,(?:[0-9a-f]{32}|absent|link:/?[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*))*)$"),
     "prop": re.compile(r"^prop:([A-Za-z0-9_.-]+)$"),
     "setting": re.compile(r"^setting:(system|secure|global)/([A-Za-z0-9_.-]+)$"),
     "service": re.compile(r"^service:([A-Za-z0-9_.-]+)$"),
     "kill": re.compile(r"^kill:([A-Za-z0-9_.:/-]+)$"),
+    "logs": re.compile(r"^logs:([A-Za-z0-9._-]+)$"),
     "binder": re.compile(r"^binder:([A-Za-z0-9_./-]+) ([0-9]+(?:,[0-9]+)*)$"),
     "root": re.compile(r"^root$"),
 }
 NEED_FORMS = {
-    "file": "file:<path>@<md5>[,<md5>...]",
+    "file": "file:<path>@<md5>[,<md5>...] (a version may also be absent or link:<target>)",
     "prop": "prop:<name>",
     "setting": "setting:<system|secure|global>/<name>",
     "service": "service:<name>",
     "kill": "kill:<process>",
+    "logs": "logs:<tag>",
     "binder": "binder:<service> <code>[,<code>...]",
     "root": "root",
 }
@@ -663,6 +665,8 @@ def parse_need(value):
         raise Fail("need=%s: should be %s" % (value, NEED_FORMS[kind]))
     if kind == "file" and (".." in m.group(1).split("/") or m.group(1).endswith("/")):
         raise Fail("need=%s: the path must name a file" % value)
+    if kind == "file" and ".." in m.group(2):
+        raise Fail("need=%s: a link target can't leave its folder" % value)
     return {"need": need, "reason": reason}
 
 
@@ -1217,9 +1221,14 @@ def need_words(need):
     if not m:
         return code(need)
     if kind == "file":
-        n = len(m.group(2).split(","))
+        vs = m.group(2).split(",")
+        if vs == ["absent"]:
+            return "adds the file %s, only where there is none" % code(m.group(1))
+        n = len(vs)
         return "replaces the file %s, only when it is %s" % (
             code(m.group(1)), "the stock version" if n == 1 else "one of %d known versions" % n)
+    if kind == "logs":
+        return "reads the system log tag %s" % code(m.group(1))
     if kind == "prop":
         return "sets the property %s" % code(m.group(1))
     if kind == "setting":
