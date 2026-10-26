@@ -9,13 +9,13 @@
   "category": "fixes",
   "versions": [
     {
-      "version": "1.4",
-      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4/cabinwright.tweaks-v1.4.zip",
-      "sha256": "cac87d4ccc840d6dae308228056c97fe3a36224bd98d17734dfa3b777a9a3a33",
+      "version": "1.4.1",
+      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4.1/cabinwright.tweaks-v1.4.1.zip",
+      "sha256": "c9dac974c6a075b870c11c2c2b55dacdea26b8f883676355924976fe58b3f7ce",
       "firmware": [
         "CVEV.USA.0000.V015.012.260507"
       ],
-      "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks (cabinwright.tweaks) without turning anything off."
+      "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks without turning anything off."
     }
   ]
 }
