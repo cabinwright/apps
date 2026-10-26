@@ -239,7 +239,7 @@ On push to `main`, weekly (so `expires` never lapses), and on manual dispatch, i
             "tier": "tweaks",
             "types": ["application"],
             "files": ["NEMESIS.data", "lib/tweakpatch.jar", "tweaks.apk", "tweaks/auto-dst/run.sh", "…"],
-            "apps": [{"package": "dev.cabinwright.tweaks", "version_code": 1}],
+            "apps": [{"package": "app.cabinwright.tweaks", "version_code": 1}],
             "services": [], "root_services": [], "hooks": [], "sh_entries": [],
             "tweaks": [
               {

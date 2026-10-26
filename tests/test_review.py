@@ -99,7 +99,7 @@ class Scripts(unittest.TestCase):
         # the store's service and the projection pack's receiver watchdog: no system writes
         got = {}
         for name in ("store-helper.sh", "aa-reconnect.sh"):
-            for f in validate.scan_script((FIXTURES / "scripts" / name).read_text(), name, {"dev.cabinwright.store"}):
+            for f in validate.scan_script((FIXTURES / "scripts" / name).read_text(), name, {"app.cabinwright.store"}):
                 got[(name, f["line"])] = f["rules"]
         self.assertEqual(got, {("store-helper.sh", 17): ["perms-unknown"], ("aa-reconnect.sh", 34): ["as-uid", "kill"]})
 
@@ -329,7 +329,7 @@ class Axml(unittest.TestCase):
     def test_real_manifest(self):
         # Edit Menu's manifest (versionCode 1), built with aapt
         m = validate.parse_axml_manifest((FIXTURES / "edit-menu.AndroidManifest.xml").read_bytes())
-        self.assertEqual(m, {"package": "dev.cabinwright.menu", "version_code": 1})
+        self.assertEqual(m, {"package": "app.cabinwright.menu", "version_code": 1})
 
     def test_aapt_agrees(self):
         aapt = validate.find_aapt()
