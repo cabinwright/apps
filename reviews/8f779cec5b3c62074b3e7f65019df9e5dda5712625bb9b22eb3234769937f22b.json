@@ -1,0 +1,50 @@
+{
+ "flags": [
+  {
+   "file": "svc/helper.sh",
+   "line": 17,
+   "rules": [
+    "perms-unknown"
+   ],
+   "text": "chmod 755 \"${PRIVATE%/*}\""
+  }
+ ],
+ "nemesis": {
+  "id": "cabinwright.store",
+  "version": "1.2"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "dev.cabinwright.store",
+    "version_code": 2
+   }
+  ],
+  "execute": false,
+  "hooks": [],
+  "root": [
+   "service helper"
+  ],
+  "root_services": [
+   "helper"
+  ],
+  "services": [
+   {
+    "mode": "restart",
+    "name": "helper",
+    "uid": "root"
+   }
+  ],
+  "sh_entries": [],
+  "system_writes": false,
+  "tweaks": [],
+  "types": [
+   "application",
+   "service"
+  ]
+ },
+ "sha256": "8f779cec5b3c62074b3e7f65019df9e5dda5712625bb9b22eb3234769937f22b",
+ "size": 86651,
+ "tool": 2,
+ "warnings": []
+}

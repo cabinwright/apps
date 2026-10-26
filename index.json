@@ -1,0 +1,478 @@
+{
+  "format": 1,
+  "sequence": 1000,
+  "generated": "2026-10-26T12:32:27Z",
+  "expires": "2027-01-24T12:32:27Z",
+  "key_id": "kia-apps-2026a",
+  "apps": [
+    {
+      "id": "cabinwright.menu",
+      "name": "Edit Menu",
+      "summary": "Hide and reorder your home screen icons",
+      "description": "Choose which icons show up on your home screen, and in what order.",
+      "author": "hazptr",
+      "homepage": "https://github.com/cabinwright/menu",
+      "category": "tools",
+      "icon": {
+        "url": "https://cabinwright.github.io/apps/icons/cabinwright.menu.png",
+        "sha256": "eccfdcacc1dfe5608f2d261e0d6f34bdd3397e99772039ad22dedaa22317a2bd"
+      },
+      "versions": [
+        {
+          "version": "1.3",
+          "url": "https://github.com/cabinwright/menu/releases/download/v1.3/cabinwright.menu-v1.3.zip",
+          "sha256": "89e59a16c379bf863dd47967e0862ba213718470eb6dea997e4343d4e480ee35",
+          "size": 28286,
+          "firmware": [
+            "*"
+          ],
+          "requires": [],
+          "notes": "The new home of Edit Menu. Takes over your menu layout from the earlier Edit Menu (cabinwright.menu).",
+          "review": {
+            "types": [
+              "application"
+            ],
+            "apps": [
+              {
+                "package": "dev.cabinwright.menu",
+                "version_code": 8
+              }
+            ],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [],
+            "root": [],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "cabinwright.store",
+      "name": "Cabinwright",
+      "summary": "Get more apps for your car",
+      "description": "Install, update and remove apps for your car.",
+      "author": "hazptr",
+      "homepage": "https://github.com/cabinwright/store",
+      "category": "tools",
+      "icon": {
+        "url": "https://cabinwright.github.io/apps/icons/cabinwright.store.png",
+        "sha256": "edb03473a7a8d47d0012fb7f94dc76b62488169a7a89b7700db183b03ccac999"
+      },
+      "versions": [
+        {
+          "version": "1.2",
+          "url": "https://github.com/cabinwright/store/releases/download/v1.2/cabinwright.store-v1.2.zip",
+          "sha256": "8f779cec5b3c62074b3e7f65019df9e5dda5712625bb9b22eb3234769937f22b",
+          "size": 86651,
+          "firmware": [
+            "*"
+          ],
+          "requires": [],
+          "notes": "Now called Cabinwright. Takes over from the App Store (cabinwright.store): what it installed, and its updates.",
+          "review": {
+            "types": [
+              "application",
+              "service"
+            ],
+            "apps": [
+              {
+                "package": "dev.cabinwright.store",
+                "version_code": 2
+              }
+            ],
+            "services": [
+              {
+                "name": "helper",
+                "uid": "root",
+                "mode": "restart"
+              }
+            ],
+            "root_services": [
+              "helper"
+            ],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [],
+            "root": [
+              "service helper"
+            ],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "cabinwright.tweaks",
+      "name": "Tweaks",
+      "summary": "Small fixes, each with an on/off switch",
+      "description": "Turn on fixes like automatic daylight saving time and skipping the start-up screen.",
+      "author": "hazptr",
+      "homepage": "https://github.com/cabinwright/tweaks",
+      "category": "fixes",
+      "icon": {
+        "url": "https://cabinwright.github.io/apps/icons/cabinwright.tweaks.png",
+        "sha256": "73380e186ba2b1dabedb745adfb09c89685453af25ff5b0da33feb1ed491296f"
+      },
+      "versions": [
+        {
+          "version": "1.4",
+          "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4/cabinwright.tweaks-v1.4.zip",
+          "sha256": "cac87d4ccc840d6dae308228056c97fe3a36224bd98d17734dfa3b777a9a3a33",
+          "size": 170465,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [],
+          "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks (cabinwright.tweaks) without turning anything off.",
+          "review": {
+            "types": [
+              "application",
+              "service"
+            ],
+            "apps": [
+              {
+                "package": "dev.cabinwright.tweaks",
+                "version_code": 5
+              }
+            ],
+            "services": [
+              {
+                "name": "tweaksd",
+                "uid": "root",
+                "mode": "restart"
+              }
+            ],
+            "root_services": [
+              "tweaksd"
+            ],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "aa-recover",
+                "name": "Fix wireless Android Auto not connecting",
+                "kind": "service",
+                "risk": "normal",
+                "retired": true
+              },
+              {
+                "id": "auto-dst",
+                "name": "Automatic daylight saving time",
+                "kind": "service",
+                "risk": "normal",
+                "retired": false
+              },
+              {
+                "id": "eth0-guard",
+                "name": "Wireless projection with ADB TCP",
+                "kind": "service",
+                "risk": "normal",
+                "retired": true
+              },
+              {
+                "id": "skip-consent",
+                "name": "Skip start-up screen",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              }
+            ],
+            "root": [
+              "service tweaksd",
+              "tweak aa-recover (through Tweaks)",
+              "tweak auto-dst (through Tweaks)",
+              "tweak eth0-guard (through Tweaks)",
+              "tweak skip-consent (through Tweaks)"
+            ],
+            "system_writes": true,
+            "execute": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "tweaks.adb",
+      "name": "ADB over Wi-Fi",
+      "summary": "Lets a computer on the car's Wi-Fi control the head unit",
+      "description": "Adds a switch to Tweaks for ADB over the car's Wi-Fi, kept in step with Engineering Mode's ADB switch. Warning: there is no password, so anyone on the car's Wi-Fi can control the head unit. Needs Tweaks.",
+      "author": "hazptr",
+      "homepage": "https://github.com/cabinwright/tweaks-adb",
+      "category": "tools",
+      "versions": [
+        {
+          "version": "1.1",
+          "url": "https://github.com/cabinwright/tweaks-adb/releases/download/v1.1/tweaks.adb-v1.1.zip",
+          "sha256": "26615db1b6d0e3e712255c904fb78033bbd6a12ac875e744257c6e845a810bc0",
+          "size": 6694,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.tweaks>=1.4"
+          ],
+          "notes": "Works with the new Tweaks (cabinwright.tweaks).",
+          "review": {
+            "types": [
+              "application"
+            ],
+            "apps": [],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "adb-wifi",
+                "name": "ADB over Wi-Fi",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              }
+            ],
+            "root": [
+              "tweak adb-wifi (through Tweaks)"
+            ],
+            "system_writes": true,
+            "execute": false
+          }
+        },
+        {
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/tweaks-adb/releases/download/v1.0/tweaks.adb-v1.0.zip",
+          "sha256": "35099777c33b12673a687a09547adccc0b66b0e19d674697a8b9bbda245401cd",
+          "size": 6698,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.tweaks>=1.4"
+          ],
+          "notes": "First release. Replaces the TCP ADB package.",
+          "review": {
+            "types": [
+              "application"
+            ],
+            "apps": [],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "adb-wifi",
+                "name": "ADB over Wi-Fi",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              }
+            ],
+            "root": [
+              "tweak adb-wifi (through Tweaks)"
+            ],
+            "system_writes": true,
+            "execute": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "tweaks.projection",
+      "name": "Wireless Android Auto and CarPlay",
+      "summary": "Use Android Auto and CarPlay without a cable",
+      "description": "Adds switches to Tweaks for wireless Android Auto and CarPlay, directions on the driver's display, and automatic reconnecting. Needs Tweaks.",
+      "author": "hazptr",
+      "homepage": "https://github.com/cabinwright/tweaks-projection",
+      "category": "projection",
+      "versions": [
+        {
+          "version": "1.2",
+          "url": "https://github.com/cabinwright/tweaks-projection/releases/download/v1.2/tweaks.projection-v1.2.zip",
+          "sha256": "3d851da6d527806e4d3e0ba14bdc5dcc571c301044e25621377f72986e1307b8",
+          "size": 780084,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.tweaks>=1.4"
+          ],
+          "notes": "Works with the new Tweaks (cabinwright.tweaks).",
+          "review": {
+            "types": [
+              "application"
+            ],
+            "apps": [],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "aa-reconnect",
+                "name": "Reconnect wireless Android Auto",
+                "kind": "service",
+                "risk": "normal",
+                "retired": false
+              },
+              {
+                "id": "adb-tcp-hotspot",
+                "name": "ADB TCP and wireless projection together",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              },
+              {
+                "id": "cluster-directions",
+                "name": "Navigation directions in the instrument cluster",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              },
+              {
+                "id": "wireless-projection",
+                "name": "Wireless Android Auto and CarPlay",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              }
+            ],
+            "root": [
+              "tweak aa-reconnect (through Tweaks)",
+              "tweak adb-tcp-hotspot (through Tweaks)",
+              "tweak cluster-directions (through Tweaks)",
+              "tweak wireless-projection (through Tweaks)"
+            ],
+            "system_writes": true,
+            "execute": false
+          }
+        },
+        {
+          "version": "1.1",
+          "url": "https://github.com/cabinwright/tweaks-projection/releases/download/v1.1/tweaks.projection-v1.1.zip",
+          "sha256": "3df9e7a830d7ac972c9e25d685873828d5b5549d9ff61ef7d7afaf190c980848",
+          "size": 780068,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.tweaks>=1.4"
+          ],
+          "notes": "Takes over the switch of the retired Android Auto fix in Tweaks.",
+          "review": {
+            "types": [
+              "application"
+            ],
+            "apps": [],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "aa-reconnect",
+                "name": "Reconnect wireless Android Auto",
+                "kind": "service",
+                "risk": "normal",
+                "retired": false
+              },
+              {
+                "id": "adb-tcp-hotspot",
+                "name": "ADB TCP and wireless projection together",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              },
+              {
+                "id": "cluster-directions",
+                "name": "Navigation directions in the instrument cluster",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              },
+              {
+                "id": "wireless-projection",
+                "name": "Wireless Android Auto and CarPlay",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              }
+            ],
+            "root": [
+              "tweak aa-reconnect (through Tweaks)",
+              "tweak adb-tcp-hotspot (through Tweaks)",
+              "tweak cluster-directions (through Tweaks)",
+              "tweak wireless-projection (through Tweaks)"
+            ],
+            "system_writes": true,
+            "execute": false
+          }
+        },
+        {
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/tweaks-projection/releases/download/v1.0/tweaks.projection-v1.0.zip",
+          "sha256": "08e33e505e24c0cf4522ad8e8a20ceae41a358584136997afb79bcccc6a38e91",
+          "size": 780054,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.tweaks>=1.4"
+          ],
+          "notes": "First release. Replaces HMG Leafia Plus's wireless projection package.",
+          "review": {
+            "types": [
+              "application"
+            ],
+            "apps": [],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "aa-reconnect",
+                "name": "Reconnect wireless Android Auto",
+                "kind": "service",
+                "risk": "normal",
+                "retired": false
+              },
+              {
+                "id": "adb-tcp-hotspot",
+                "name": "ADB TCP and wireless projection together",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              },
+              {
+                "id": "cluster-directions",
+                "name": "Navigation directions in the instrument cluster",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              },
+              {
+                "id": "wireless-projection",
+                "name": "Wireless Android Auto and CarPlay",
+                "kind": "oneshot",
+                "risk": "system",
+                "retired": false
+              }
+            ],
+            "root": [
+              "tweak aa-reconnect (through Tweaks)",
+              "tweak adb-tcp-hotspot (through Tweaks)",
+              "tweak cluster-directions (through Tweaks)",
+              "tweak wireless-projection (through Tweaks)"
+            ],
+            "system_writes": true,
+            "execute": false
+          }
+        }
+      ]
+    }
+  ]
+}
