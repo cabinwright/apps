@@ -9,13 +9,13 @@
   "category": "tools",
   "versions": [
     {
-      "version": "1.2",
-      "url": "https://github.com/cabinwright/store/releases/download/v1.2/cabinwright.store-v1.2.zip",
-      "sha256": "8f779cec5b3c62074b3e7f65019df9e5dda5712625bb9b22eb3234769937f22b",
+      "version": "1.2.1",
+      "url": "https://github.com/cabinwright/store/releases/download/v1.2.1/cabinwright.store-v1.2.1.zip",
+      "sha256": "46dcc6d0bd0e720284ba2ab05a79a5c13abb7ba6bb3058516871b3b260779b4c",
       "firmware": [
         "*"
       ],
-      "notes": "Now called Cabinwright. Takes over from the App Store (cabinwright.store): what it installed, and its updates."
+      "notes": "Now called Cabinwright. Takes over from the earlier App Store: what it installed, and its updates."
     }
   ]
 }
