@@ -1,6 +1,7 @@
 """index.json: build, sign/verify round trip, keygen, and the shared test vectors."""
 import base64
 import datetime
+import hashlib
 import json
 import os
 import stat
@@ -9,7 +10,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from helpers import HERE, Fetcher, entry, package, png, version, write
+from helpers import HERE, Fetcher, entry, package, png, tweak_package, version, write
 
 import build_index
 import sign_index
@@ -30,15 +31,16 @@ class Build(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         d = Path(self.tmp.name)
-        self.apps, self.pages = d / "apps", d / "pages"
-        self.apps.mkdir()
-        self.pages.mkdir()
-        z1, z2 = package("b.pkg", "1.0"), package("a.pkg", "2.0")
-        self.icon = "https://raw.githubusercontent.com/o/a/v2/icon.png"
-        v1, v2 = version("1.0", z1), version("2.0", z2, requires=["b.pkg>=1"], notes="n")
+        self.apps, self.pages, self.icons = d / "apps", d / "pages", d / "icons"
+        for x in (self.apps, self.pages, self.icons):
+            x.mkdir()
+        z1, z2 = tweak_package("b.pkg", "1.0"), package("a.pkg", "2.0")
+        v1 = version("1.0", z1, firmware=["CVEV.USA.0000.V015.012.260507"])
+        v2 = version("2.0", z2, requires=["b.pkg>=1"], notes="n", capabilities={"tweaks": "Shows your tweaks"})
         write(self.apps, entry("b.pkg", versions=[v1]))
-        write(self.apps, entry("a.pkg", versions=[v2], icon=self.icon, description="dé"))
-        self.fetch = Fetcher({v1["url"]: z1, v2["url"]: z2, self.icon: png(32, 32)})
+        write(self.apps, entry("a.pkg", versions=[v2], description="dé"))
+        (self.icons / "a.pkg.png").write_bytes(png(32, 32))
+        self.fetch = Fetcher({v1["url"]: z1, v2["url"]: z2})
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -60,12 +62,22 @@ class Build(unittest.TestCase):
         self.assertEqual([a["id"] for a in idx["apps"]], ["a.pkg", "b.pkg"])
         a = idx["apps"][0]
         self.assertEqual(a["icon"]["url"], "https://cabinwright.github.io/apps/icons/a.pkg.png")
-        self.assertTrue((self.pages / "icons" / "a.pkg.png").exists())
+        self.assertEqual((self.pages / "icons" / "a.pkg.png").read_bytes(), png(32, 32))
+        self.assertEqual(a["icon"]["sha256"], hashlib.sha256(png(32, 32)).hexdigest())
         self.assertNotIn("icon", idx["apps"][1])
         self.assertEqual(idx["apps"][1]["description"], "")
         v = a["versions"][0]
-        self.assertEqual(set(v), {"version", "url", "sha256", "size", "firmware", "requires", "notes", "review"})
-        self.assertEqual(set(v["review"]), {"types", "apps", "services", "root_services", "system_writes", "execute", "hooks", "sh_entries", "tweaks", "root"})
+        self.assertEqual(list(v), ["version", "url", "sha256", "size", "firmware", "requires", "tier",
+                                   "capabilities", "notes", "review"])
+        self.assertEqual((v["tier"], v["capabilities"]), ("app", {"tweaks": "Shows your tweaks"}))
+        self.assertEqual(set(v["review"]), {"tier", "types", "files", "apps", "services", "root_services",
+                                            "system_writes", "execute", "hooks", "sh_entries", "tweaks", "root"})
+        b = idx["apps"][1]["versions"][0]
+        self.assertEqual((b["tier"], b["capabilities"]), ("tweaks", {}))
+        self.assertEqual([(t["id"], t["needs"]) for t in b["review"]["tweaks"]], [("auto-dst", [
+            {"need": "setting:system/summer_time", "reason": "Turn the head unit's own daylight-saving switch"},
+            {"need": "binder:com.hkmc.micom.time 3,4", "reason": "Set the clock through the head unit's time service"},
+        ])])
         raw = (self.pages / "index.json").read_bytes()
         raw.decode("ascii")  # ASCII only
         self.assertEqual(json.loads(raw), idx)
@@ -74,15 +86,9 @@ class Build(unittest.TestCase):
         self.build(first=True)
         calls = len(self.fetch.calls)
         self.assertEqual(self.build()["sequence"], 2)
-        # zips come from the review cache; only the icon is fetched again
-        self.assertEqual(self.fetch.calls[calls:], [self.icon])
+        # zips come from the review cache
+        self.assertEqual(self.fetch.calls[calls:], [])
         self.assertEqual(self.build()["sequence"], 3)
-
-    def test_min_sequence(self):
-        # a store that came from the kia-apps index carries that index's sequence over
-        self.assertEqual(self.build(first=True, min_sequence=1000)["sequence"], 1000)
-        self.assertEqual(self.build(min_sequence=1000)["sequence"], 1001)
-        self.assertEqual(self.build()["sequence"], 1002)
 
     def test_broken_app_fails_the_build(self):
         doc = json.loads((self.apps / "b.pkg.json").read_text())
@@ -115,11 +121,29 @@ class Build(unittest.TestCase):
             self.build(first=True)
         self.assertIn("replaced_by names gone.pkg", str(c.exception))
 
-    def test_icon_outage_keeps_last_icon(self):
+    def test_icons(self):
         self.build(first=True)
-        del self.fetch.files[self.icon]
+        # an icon that's gone from the repo is gone from Pages
+        (self.icons / "a.pkg.png").unlink()
         idx = self.build()
-        self.assertIn("icon", idx["apps"][0])
+        self.assertNotIn("icon", idx["apps"][0])
+        self.assertFalse((self.pages / "icons" / "a.pkg.png").exists())
+        # a bad icon, or one without an entry, fails the build
+        (self.icons / "a.pkg.png").write_bytes(png(512, 512))
+        with self.assertRaisesRegex(validate.Fail, "512x512"):
+            self.build()
+        (self.icons / "a.pkg.png").unlink()
+        (self.icons / "c.pkg.png").write_bytes(png(8, 8))
+        with self.assertRaisesRegex(validate.Fail, "no apps/c.pkg.json for this icon"):
+            self.build()
+
+    def test_pending_fails_the_build(self):
+        doc = json.loads((self.apps / "b.pkg.json").read_text())
+        doc["versions"][0]["sha256"] = validate.PENDING
+        write(self.apps, doc)
+        with self.assertRaisesRegex(validate.Fail, "placeholder"):
+            self.build(first=True)
+        self.assertFalse((self.pages / "index.json").exists())
 
 
 class Verify(unittest.TestCase):

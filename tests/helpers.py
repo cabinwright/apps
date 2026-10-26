@@ -68,16 +68,57 @@ def nemesis_data(id="test.pkg", version="1.0", types="application,service", apps
 
 
 def package(id="test.pkg", version="1.0", scripts=None, extra=""):
-    """A package zip with one app and the given {path: script} services."""
-    scripts = scripts if scripts is not None else {"svc/a.sh": "#!/system/bin/sh\necho hi\n"}
+    """A package zip with one top-level APK and the given {path: script} root services: tier app
+    without scripts, tier system with them."""
+    scripts = scripts or {}
     files = {
-        "NEMESIS.data": nemesis_data(id, version, apps=[("app/t.apk", "dev.test")],
+        "NEMESIS.data": nemesis_data(id, version, types="application,service" if scripts else "application",
+                                     apps=[("t.apk", "dev.test")],
                                      services=[(p.split("/")[-1][:-3], p, "root") for p in scripts],
                                      extra=extra),
-        "app/t.apk": apk("dev.test", 3),
+        "t.apk": apk("dev.test", 3),
     }
     files.update(scripts)
     return make_zip(files)
+
+
+# the store's own package: the one id that may be tier system
+SYSTEM = "cabinwright.store"
+
+
+def system_package(version="1.0", scripts=None, extra=""):
+    scripts = scripts if scripts is not None else {"svc/a.sh": "#!/system/bin/sh\necho hi\n"}
+    return package(SYSTEM, version, scripts, extra)
+
+
+AUTO_DST = """name=Automatic daylight saving time
+summary=Changes the clock for daylight saving time
+description=Moves the clock forward in March and back in November.
+firmware=CVEV.USA.0000.V015.012.260507
+kind=service
+default=on
+need=setting:system/summer_time | Turn the head unit's own daylight-saving switch
+need=binder:com.hkmc.micom.time 3,4 | Set the clock through the head unit's time service
+"""
+
+
+def tweak_conf(name="X", kind="oneshot", default="off", firmware="*", extra=""):
+    return "name=%s\nsummary=Does %s\nfirmware=%s\nkind=%s\ndefault=%s\n%s" % (
+        name, name, firmware, kind, default, extra)
+
+
+def tweak_package(id="tweaks.test", version="1.0", tweaks=None, files=None, with_apk=False):
+    """A tweaks-tier zip: {tweak id: tweak.conf text} (enable.sh or run.sh added to match), plus files."""
+    tweaks = tweaks if tweaks is not None else {"auto-dst": AUTO_DST}
+    out = {"NEMESIS.data": nemesis_data(id, version, types="application")}
+    for tid, conf in tweaks.items():
+        out["tweaks/%s/tweak.conf" % tid] = conf
+        script = "run.sh" if "kind=service" in conf else "enable.sh"
+        out["tweaks/%s/%s" % (tid, script)] = "#!/system/bin/sh\nkt setting put system summer_time 1\n"
+    if with_apk:
+        out["tweaks.apk"] = apk("dev.test.tweaks", 1)
+    out.update(files or {})
+    return make_zip(out)
 
 
 def entry(id="test.pkg", versions=None, **kw):
@@ -87,9 +128,13 @@ def entry(id="test.pkg", versions=None, **kw):
     return doc
 
 
-def version(v, data, firmware=("*",), **kw):
+def version(v, data, firmware=("*",), tier=None, **kw):
+    """A version entry for the zip; tier defaults to the one the zip is."""
+    if tier is None:
+        import validate
+        tier = validate.inspect_zip(data)["review"]["tier"]
     d = {"version": v, "url": "https://github.com/o/r/releases/download/v%s/p-%s.zip" % (v, v),
-         "sha256": hashlib.sha256(data).hexdigest(), "firmware": list(firmware)}
+         "sha256": hashlib.sha256(data).hexdigest(), "firmware": list(firmware), "tier": tier}
     d.update(kw)
     return d
 

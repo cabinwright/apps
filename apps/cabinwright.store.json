@@ -5,17 +5,17 @@
   "description": "Install, update and remove apps for your car.",
   "author": "hazptr",
   "homepage": "https://github.com/cabinwright/store",
-  "icon": "https://raw.githubusercontent.com/cabinwright/store/469c79450b7e2573d8a2b4231a2808ef0ad88a57/icon.png",
   "category": "tools",
   "versions": [
     {
-      "version": "1.2.1",
-      "url": "https://github.com/cabinwright/store/releases/download/v1.2.1/cabinwright.store-v1.2.1.zip",
-      "sha256": "46dcc6d0bd0e720284ba2ab05a79a5c13abb7ba6bb3058516871b3b260779b4c",
+      "version": "1.0",
+      "url": "https://github.com/cabinwright/store/releases/download/v1.0/cabinwright.store-v1.0.zip",
+      "sha256": "pending",
       "firmware": [
         "*"
       ],
-      "notes": "Now called Cabinwright. Takes over from the earlier App Store: what it installed, and its updates."
+      "tier": "system",
+      "notes": "First release."
     }
   ]
 }

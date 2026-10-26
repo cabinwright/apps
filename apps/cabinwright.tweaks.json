@@ -5,17 +5,20 @@
   "description": "Turn on fixes like automatic daylight saving time and skipping the start-up screen.",
   "author": "hazptr",
   "homepage": "https://github.com/cabinwright/tweaks",
-  "icon": "https://raw.githubusercontent.com/cabinwright/tweaks/e28ed0850cd0932377c18926e53de1064c977ef9/icon.png",
   "category": "fixes",
   "versions": [
     {
-      "version": "1.4.1",
-      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4.1/cabinwright.tweaks-v1.4.1.zip",
-      "sha256": "c9dac974c6a075b870c11c2c2b55dacdea26b8f883676355924976fe58b3f7ce",
+      "version": "1.0",
+      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.0/cabinwright.tweaks-v1.0.zip",
+      "sha256": "pending",
       "firmware": [
         "CVEV.USA.0000.V015.012.260507"
       ],
-      "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks without turning anything off."
+      "tier": "tweaks",
+      "capabilities": {
+        "tweaks": "Shows and switches your tweaks"
+      },
+      "notes": "First release."
     }
   ]
 }

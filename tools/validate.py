@@ -5,9 +5,10 @@ usage: validate.py [options] apps/<id>.json ...
        validate.py --inspect <package.zip>     review a local zip, no json needed
 
 For every new or changed version (every version without --base) it downloads the zip from
-GitHub Releases, checks its SHA-256, opens it, checks NEMESIS.data against the entry and
-writes a review: what the package installs, what runs as root, and every script line that
-touches the system. Errors exit 1. Flags never fail: they are for the owner's review.
+GitHub Releases, checks its SHA-256, opens it, checks NEMESIS.data and the tier against the
+entry, checks every tweak.conf, and writes a review: the files, each tweak's needs, what runs
+as root, and every script line that touches the system. Errors exit 1. Flags never fail: they
+are for the owner's review.
 
   --base REF            versions identical to the ones in REF's copy aren't downloaded, and
                         retired apps (deprecated, withdrawn) can't gain new ones
@@ -16,6 +17,7 @@ touches the system. Errors exit 1. Flags never fail: they are for the owner's re
                         use a local zip instead of downloading (plain PATH: the newest
                         version of the only app given); the SHA-256 is still checked
   --apps-dir DIR        where `requires` are looked up (default: the first file's dir)
+  --icons-dir DIR       where icons/<id>.png are (default: icons/ next to the apps dir)
   --comment FILE        write the review as a PR comment (markdown)
   --labels FILE         write the PR labels that apply, one per line
   --json FILE           write the full report as JSON
@@ -49,11 +51,22 @@ MAX_UNZIPPED = 256 << 20   # zip bombs: nothing legitimate on a head unit is nea
 MAX_ICON = 64 << 10
 MAX_ICON_PX = 256
 # bump when the review logic changes, so cached reviews are recomputed
-REVIEW_VERSION = 2
+REVIEW_VERSION = 1
+# the sha256 of a version whose release isn't built yet; it never passes the checks
+PENDING = "pending"
 
 RELEASE_URL = re.compile(
     r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/releases/download/[^/?#\s]+/[^/?#\s]+$")
 LABELS = ("root", "system-writes", "needs-firmware-match")
+TIERS = ("app", "tweaks", "system")
+# the only ids that may be tier system; the store compiles in the same list
+SYSTEM_IDS = ("cabinwright.store",)
+CAPABILITIES = {
+    "tweaks": "list your tweaks, read their status and log, and switch them",
+    "logs": "read the head unit's system log (asks first)",
+    "settings": "change the settings and properties on the store's list",
+    "root": "run commands as root (asks first, every command logged)",
+}
 MARKER = "<!-- cabinwright-apps-review -->"
 
 
@@ -79,8 +92,11 @@ def vcmp(a, b):
 # set on an app that is retired; entries are never deleted, so cars that have it can be told
 RETIRED = ("withdrawn", "deprecated")
 HOOKS = ("preinstall", "postinstall", "preuninstall", "postuninstall")
-TWEAK_CONF = re.compile(r"^tweaks/([^/]+)/tweak\.conf$")
+ID = re.compile(r"^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$")
 REQUIRE = re.compile(r"^([A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*)(?:>=([0-9]+(?:\.[0-9]+)*))?$")
+FIRMWARE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+# APKs the store keeps from app and tweaks packages: only at the top level of the zip
+APK = re.compile(r"^[^/]+\.apk$")
 
 
 # ---------------------------------------------------------------- JSON schema (the subset we use)
@@ -169,8 +185,14 @@ def png_size(data):
     return struct.unpack(">II", data[16:24])
 
 
-def check_icon(url, fetcher=fetch):
-    data = fetcher(url, MAX_ICON)
+def check_icon(path):
+    """icons/<id>.png -> its bytes, if it's a PNG within the limits; raises Fail."""
+    try:
+        data = Path(path).read_bytes()
+    except OSError as e:
+        raise Fail("can't read %s: %s" % (path, e))
+    if len(data) > MAX_ICON:
+        raise Fail("%s is %d bytes, at most %d" % (path, len(data), MAX_ICON))
     w, h = png_size(data)
     if w > MAX_ICON_PX or h > MAX_ICON_PX:
         raise Fail("icon is %dx%d, at most %dx%d" % (w, h, MAX_ICON_PX, MAX_ICON_PX))
@@ -589,10 +611,131 @@ def scan_script(text, name, own=()):
     return flags
 
 
+# ---------------------------------------------------------------- tweak.conf
+
+TWEAK_KEYS = ("name", "summary", "description", "firmware", "kind", "default", "conflicts", "need")
+TWEAK_REQUIRED = ("name", "summary", "firmware", "kind", "default")
+NOT_TWEAK_KEYS = {
+    "risk": "risk= isn't a tweak.conf key: a tweak changes system files when it has a file: need, "
+            "and system settings otherwise",
+    "retired": "retired= isn't a tweak.conf key: to retire a tweak, leave its folder out of the package; "
+               "the runner undoes it",
+    "replaces": "replaces= isn't a tweak.conf key: each tweak stands alone, and its journal is undone "
+                "when it leaves its package",
+}
+NEEDS = {
+    "file": re.compile(r"^file:(/[^\s@|]+)@([0-9a-f]{32}(?:,[0-9a-f]{32})*)$"),
+    "prop": re.compile(r"^prop:([A-Za-z0-9_.-]+)$"),
+    "setting": re.compile(r"^setting:(system|secure|global)/([A-Za-z0-9_.-]+)$"),
+    "service": re.compile(r"^service:([A-Za-z0-9_.-]+)$"),
+    "kill": re.compile(r"^kill:([A-Za-z0-9_.:/-]+)$"),
+    "binder": re.compile(r"^binder:([A-Za-z0-9_./-]+) ([0-9]+(?:,[0-9]+)*)$"),
+    "root": re.compile(r"^root$"),
+}
+NEED_FORMS = {
+    "file": "file:<path>@<md5>[,<md5>...]",
+    "prop": "prop:<name>",
+    "setting": "setting:<system|secure|global>/<name>",
+    "service": "service:<name>",
+    "kill": "kill:<process>",
+    "binder": "binder:<service> <code>[,<code>...]",
+    "root": "root",
+}
+# steps the journal can't undo: a oneshot tweak that uses them must undo them itself
+NO_UNDO = ("binder", "kill", "service", "root")
+
+
+def need_kind(need):
+    return need.split(":", 1)[0] if ":" in need else need
+
+
+def parse_need(value):
+    """'<need> | <reason>' -> {"need", "reason"}; raises Fail."""
+    need, sep, reason = value.partition("|")
+    need, reason = need.strip(), reason.strip()
+    if not sep or not reason:
+        raise Fail("need=%s: give a reason for the driver: need=<need> | <reason>" % value)
+    kind = need_kind(need)
+    if kind not in NEEDS:
+        raise Fail("need=%s: unknown need %r (one of %s)" % (value, kind, ", ".join(NEEDS)))
+    m = NEEDS[kind].match(need)
+    if not m:
+        raise Fail("need=%s: should be %s" % (value, NEED_FORMS[kind]))
+    if kind == "file" and (".." in m.group(1).split("/") or m.group(1).endswith("/")):
+        raise Fail("need=%s: the path must name a file" % value)
+    return {"need": need, "reason": reason}
+
+
+def parse_tweak(tid, text, files):
+    """tweaks/<tid>/tweak.conf -> (tweak dict, errors). files: the names in the tweak's folder."""
+    errs, conf, needs = [], {}, []
+    where = "tweaks/%s/tweak.conf" % tid
+    if not ID.match(tid):
+        errs.append("tweaks/%s: a tweak id is letters and digits, separated by . _ or -" % tid)
+    for n, line in enumerate(text.splitlines(), 1):
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        k, sep, v = s.partition("=")
+        k, v = k.strip(), v.strip()
+        if not sep:
+            errs.append("%s:%d: not key=value" % (where, n))
+        elif k in NOT_TWEAK_KEYS:
+            errs.append("%s:%d: %s" % (where, n, NOT_TWEAK_KEYS[k]))
+        elif k not in TWEAK_KEYS:
+            errs.append("%s:%d: unknown key %s (known: %s)" % (where, n, k, ", ".join(TWEAK_KEYS)))
+        elif k == "need":
+            try:
+                nd = parse_need(v)
+            except Fail as e:
+                errs.append("%s:%d: %s" % (where, n, e))
+                continue
+            if any(x["need"] == nd["need"] for x in needs):
+                errs.append("%s:%d: need %s is listed twice" % (where, n, nd["need"]))
+            needs.append(nd)
+        elif k in conf:
+            errs.append("%s:%d: %s= is set twice" % (where, n, k))
+        else:
+            conf[k] = v
+    for k in TWEAK_REQUIRED:
+        if not conf.get(k):
+            errs.append("%s: missing %s=" % (where, k))
+    kind, default = conf.get("kind", ""), conf.get("default", "")
+    if kind and kind not in ("oneshot", "service"):
+        errs.append("%s: kind=%s, should be oneshot or service" % (where, kind))
+    if default and default not in ("on", "off"):
+        errs.append("%s: default=%s, should be on or off" % (where, default))
+    firmware = [f.strip() for f in conf.get("firmware", "").split(",") if f.strip()]
+    if firmware and firmware != ["*"] and not all(f != "*" and FIRMWARE.match(f) for f in firmware):
+        errs.append("%s: firmware= is * or exact firmware strings, comma-separated" % where)
+    conflicts = [c.strip() for c in conf.get("conflicts", "").split(",") if c.strip()]
+    for c in conflicts:
+        if not ID.match(c):
+            errs.append("%s: conflicts=%s isn't a tweak id" % (where, c))
+        elif c == tid:
+            errs.append("%s: conflicts with itself" % where)
+    script = {"oneshot": "enable.sh", "service": "run.sh"}.get(kind)
+    if script and script not in files:
+        errs.append("tweaks/%s: a kind=%s tweak needs %s" % (tid, kind, script))
+    undo = sorted({need_kind(x["need"]) for x in needs} & set(NO_UNDO), key=NO_UNDO.index)
+    if kind == "oneshot" and undo and "disable.sh" not in files:
+        errs.append("tweaks/%s: a oneshot tweak with %s needs must ship disable.sh: the runner can't undo "
+                    "those steps by itself" % (tid, "/".join(undo)))
+    tweak = {
+        "id": tid, "name": conf.get("name", ""), "summary": conf.get("summary", ""),
+        "description": conf.get("description", ""), "kind": kind, "default": default,
+        "firmware": firmware, "conflicts": conflicts, "needs": needs,
+        "changes": "files" if any(need_kind(x["need"]) == "file" for x in needs) else "settings",
+        "disable": "disable.sh" in files,
+    }
+    return tweak, errs
+
+
 # ---------------------------------------------------------------- packages
 
 def inspect_zip(data):
-    """Zip bytes -> {"nemesis": {id, version}, "review", "flags", "paths"}; raises Fail."""
+    """Zip bytes -> {"nemesis": {id, version}, "review", "flags", "warnings", "errors",
+    "system_reasons"}; raises Fail for a zip it can't read at all."""
     try:
         z = zipfile.ZipFile(io.BytesIO(data))
     except zipfile.BadZipFile:
@@ -621,7 +764,9 @@ def inspect_zip(data):
         if not nem.get(k):
             raise Fail("NEMESIS.data has no %s" % k)
     types = [t.strip().lower() for t in nem.get("types", "").split(",") if t.strip()]
-    warnings = []
+    warnings, errors = [], []
+    # why the package can only be tier system: what the store's own manifest never has
+    system = []
 
     def need(sec, what):
         p = sec.get("path", "")
@@ -629,20 +774,24 @@ def inspect_zip(data):
             raise Fail("NEMESIS.data %s path %r isn't in the zip" % (what, p))
         return p
 
-    apps, own, sh_entries = [], set(), []
+    apps, own, sh_entries, listed = [], set(), [], set()
     for i, sec in enumerate(numbered(ini, "app")):
         p = need(sec, "app")
-        if sec.get("kind", "apk") == "sh":
+        kind = sec.get("kind", "apk")
+        if kind == "sh":
             # a script NEMESIS runs from its UI; no uid means root
             sh_entries.append({"path": p, "uid": sec.get("uid") or "root"})
+            system.append("a kind=sh entry, %s" % p)
             continue
-        if sec.get("kind", "apk") != "apk":
-            warnings.append("[app.%d] kind=%s isn't apk" % (i, sec.get("kind")))
+        if kind != "apk":
+            warnings.append("[app.%d] kind=%s isn't apk" % (i, kind))
+            system.append("a kind=%s entry, %s" % (kind, p))
             continue
         info = apk_info(z.read(p))
         if sec.get("package") and sec["package"] != info["package"]:
             raise Fail("[app.%d] says package=%s but %s is %s" % (i, sec["package"], p, info["package"]))
         own.add(info["package"])
+        listed.add(p)
         apps.append({"package": info["package"], "version_code": info["version_code"]})
 
     services, scripts = [], set()
@@ -651,6 +800,7 @@ def inspect_zip(data):
         name = sec.get("name") or "service.%d" % i
         uid = sec.get("uid") or "root"
         services.append({"name": name, "uid": uid, "mode": sec.get("mode", "")})
+        system.append("the service %s" % name)
         if sec.get("kind", "sh") == "sh":
             scripts.add(p)
 
@@ -660,24 +810,54 @@ def inspect_zip(data):
         if nem.get(k):
             hooks.append({"hook": k, "path": need({"path": nem[k]}, k)})
             scripts.add(nem[k])
+            system.append("a %s hook" % k)
     for e in sh_entries:
         scripts.add(e["path"])
 
-    # tweak packs: Tweaks' runner runs every tweak's scripts as root
-    tweaks = []
-    for n in sorted(names):
-        m = TWEAK_CONF.match(n)
-        if not m:
-            continue
-        conf = {}
-        for line in z.read(n).decode("utf-8", "replace").splitlines():
-            k, sep, v = line.partition("=")
-            if sep:
-                conf[k.strip()] = v.strip()
-        tweaks.append({"id": m.group(1), "name": conf.get("name", ""), "kind": conf.get("kind", ""),
-                       "risk": conf.get("risk", "normal"), "retired": conf.get("retired") == "1"})
+    execute = "execute" in types or any(s.get("type", "").lower() == "execute" for s in ini.values())
+    if execute:
+        system.append("type=execute")
 
-    if apps and "application" not in types:
+    # what the store keeps for app and tweaks packages: APKs, tweaks/<id>/** and lib/**
+    apks = [n for n in names if APK.match(n)]
+    tweak_files = [n for n in names if n.startswith(("tweaks/", "lib/"))]
+    other = [n for n in names if n != "NEMESIS.data" and n not in apks and n not in tweak_files]
+    if other:
+        system.append("files other than top-level APKs, tweaks/ and lib/: %s%s" % (
+            ", ".join(other[:5]), " and %d more" % (len(other) - 5) if len(other) > 5 else ""))
+
+    tweaks, folders = [], {}
+    for n in names:
+        if n.startswith("tweaks/"):
+            parts = n.split("/")
+            if len(parts) < 3:
+                errors.append("%s isn't in a tweak's folder (tweaks/<id>/)" % n)
+            else:
+                folders.setdefault(parts[1], set()).add("/".join(parts[2:]))
+    for tid in sorted(folders):
+        if "tweak.conf" not in folders[tid]:
+            errors.append("tweaks/%s has no tweak.conf" % tid)
+            continue
+        try:
+            text = z.read("tweaks/%s/tweak.conf" % tid).decode("utf-8")
+        except UnicodeDecodeError:
+            errors.append("tweaks/%s/tweak.conf isn't UTF-8" % tid)
+            continue
+        t, errs = parse_tweak(tid, text, folders[tid])
+        tweaks.append(t)
+        errors += errs
+
+    tier = "system" if system else "tweaks" if tweak_files else "app"
+    if tier != "system":
+        # the store installs every APK it keeps, listed in NEMESIS.data or not
+        for p in sorted(set(apks) - listed):
+            info = apk_info(z.read(p))
+            own.add(info["package"])
+            apps.append({"package": info["package"], "version_code": info["version_code"]})
+        if not apks and not tweak_files:
+            errors.append("the package installs nothing: no APKs, tweaks/ or lib/")
+
+    if apps and "application" not in types and tier == "system":
         warnings.append("NEMESIS.data has apps but types doesn't include application")
     if services and "service" not in types:
         warnings.append("NEMESIS.data has services but types doesn't include service")
@@ -685,8 +865,6 @@ def inspect_zip(data):
     for k in ini:
         if not known.match(k):
             warnings.append("NEMESIS.data has an unknown section [%s]" % k)
-
-    execute = "execute" in types or any(s.get("type", "").lower() == "execute" for s in ini.values())
 
     flags = []
     for n in names:
@@ -700,7 +878,9 @@ def inspect_zip(data):
             flags += scan_script(text, n, own)
 
     review = {
+        "tier": tier,
         "types": types,
+        "files": sorted(names),
         "apps": apps,
         "services": services,
         "root_services": [s["name"] for s in services if s["uid"] in ("root", "0")],
@@ -710,12 +890,13 @@ def inspect_zip(data):
         "root": ["service " + s["name"] for s in services if s["uid"] in ("root", "0")]
         + ["%s hook %s" % (h["hook"], h["path"]) for h in hooks]
         + ["script " + e["path"] for e in sh_entries if e["uid"] in ("root", "0")]
-        + ["tweak %s (through Tweaks)" % t["id"] for t in tweaks],
-        "system_writes": any(RULES[r][0] for f in flags for r in f["rules"]),
+        + ["tweak %s (need=root)" % t["id"] for t in tweaks if any(x["need"] == "root" for x in t["needs"])],
+        "system_writes": any(RULES[r][0] for f in flags for r in f["rules"])
+        or any(t["changes"] == "files" for t in tweaks),
         "execute": execute,
     }
     return {"nemesis": {"id": nem["id"], "version": nem["version"]}, "review": review,
-            "flags": flags, "warnings": warnings}
+            "flags": flags, "warnings": warnings, "errors": errors, "system_reasons": system}
 
 
 def review_zip(data, sha256, cache=None):
@@ -811,20 +992,61 @@ def check_retirement(doc, apps_dir, base_doc, rep):
         warn("was %s: the store offers it again" % retired(base_doc))
 
 
-def check_app(path, base=None, cache=None, local_zips=None, apps_dir=None, fetcher=fetch, icons=True):
+def pending_errors(doc):
+    """Versions whose sha256 is still the PENDING placeholder: one plain error each."""
+    out = []
+    for v in doc.get("versions", []) if isinstance(doc.get("versions"), list) else []:
+        if isinstance(v, dict) and v.get("sha256") == PENDING:
+            out.append("%s: sha256 is the placeholder %s: put in the SHA-256 of the release's zip" % (
+                v.get("version", "?"), json.dumps(PENDING)))
+    return out
+
+
+def icon_path(icons_dir, app_id):
+    return Path(icons_dir) / ("%s.png" % app_id)
+
+
+def check_tier(doc, v, r, verr):
+    """The entry's tier and capabilities against what the zip holds."""
+    tier, got = v["tier"], r["review"]["tier"]
+    if tier == "system" and doc["id"] not in SYSTEM_IDS:
+        verr("tier system is only for %s: other packages are app or tweaks, and the store writes "
+             "their manifest" % ", ".join(SYSTEM_IDS))
+    elif tier != "system" and got == "system":
+        for why in r["system_reasons"]:
+            verr("tier %s, but the package has %s: the store keeps only top-level APKs, tweaks/ and lib/ "
+                 "for app and tweaks packages" % (tier, why))
+    elif tier == "app" and got == "tweaks":
+        verr("tier app, but the package has tweaks/ or lib/: that's tier tweaks")
+    elif tier == "tweaks" and got == "app":
+        verr("tier tweaks, but the package has no tweaks/ or lib/: that's tier app")
+    elif tier == "system" and got != "system":
+        verr("tier system, but the package is plain tier %s: declare %s" % (got, got))
+    if v.get("capabilities") and not r["review"]["apps"]:
+        verr("capabilities are for apps, and the package installs no APK")
+
+
+def check_app(path, base=None, cache=None, local_zips=None, apps_dir=None, fetcher=fetch, icons_dir=None):
     """One apps/<id>.json -> report dict. base: the old file's text, "" for a file that is new
-    against the base, or None (no base: every version is checked, as new)."""
+    against the base, or None (no base: every version is checked, as new). icons_dir: where
+    <id>.png is (default: icons/ next to the apps dir); False skips the icon."""
     path = Path(path)
     rep = {"file": str(path), "id": path.stem, "errors": [], "warnings": [], "versions": [], "app": None}
     err = rep["errors"].append
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
+    except OSError:
+        err("%s doesn't exist: every icons/<id>.png goes with an apps/<id>.json" % path)
+        return rep
     except (ValueError, UnicodeDecodeError) as e:
         err("not valid JSON: %s" % e)
         return rep
     if path.suffix != ".json":
         err("app files are apps/<id>.json")
     errs = check_schema(doc, load_schema())
+    pending = pending_errors(doc) if isinstance(doc, dict) else []
+    if pending:
+        errs = [e for e in errs if not re.match(r"^\$\.versions\[\d+\]\.sha256: ", e)] + pending
     if errs:
         rep["errors"] += errs
         return rep
@@ -865,9 +1087,11 @@ def check_app(path, base=None, cache=None, local_zips=None, apps_dir=None, fetch
             except (ValueError, KeyError, IndexError, TypeError):
                 pass
 
-    if icons and doc.get("icon"):
+    if icons_dir is None:
+        icons_dir = apps_dir.parent / "icons"
+    if icons_dir and icon_path(icons_dir, doc["id"]).exists():
         try:
-            check_icon(doc["icon"], fetcher)
+            check_icon(icon_path(icons_dir, doc["id"]))
         except Fail as e:
             err("icon: %s" % e)
 
@@ -883,7 +1107,8 @@ def check_app(path, base=None, cache=None, local_zips=None, apps_dir=None, fetch
 
     for i, v in enumerate(doc["versions"]):
         ver = {"version": v["version"], "url": v["url"], "sha256": v["sha256"], "status": "new",
-               "firmware": v["firmware"], "requires": v.get("requires", []), "errors": [], "warnings": []}
+               "firmware": v["firmware"], "requires": v.get("requires", []), "tier": v["tier"],
+               "capabilities": v.get("capabilities", {}), "errors": [], "warnings": []}
         rep["versions"].append(ver)
         verr = ver["errors"].append
         o = old.get(v["version"])
@@ -930,6 +1155,8 @@ def check_app(path, base=None, cache=None, local_zips=None, apps_dir=None, fetch
         ver["review"] = r["review"]
         ver["flags"] = r["flags"]
         ver["warnings"] += r.get("warnings", [])
+        ver["errors"] += r.get("errors", [])
+        check_tier(doc, v, r, verr)
         if r["nemesis"]["id"] != doc["id"]:
             verr("NEMESIS.data id is %s, not %s" % (r["nemesis"]["id"], doc["id"]))
         if r["nemesis"]["version"] != v["version"]:
@@ -951,7 +1178,7 @@ def labels(reps):
         for v in rep["versions"]:
             if v["status"] == "unchanged" or "review" not in v:
                 continue
-            if v["review"].get("root") or v["review"]["root_services"]:
+            if v["review"].get("root") or v["review"]["root_services"] or "root" in v.get("capabilities", {}):
                 out.add("root")
             if v["review"]["system_writes"]:
                 out.add("system-writes")
@@ -975,9 +1202,48 @@ def code(s):
     return "`" * ticks + pad + s + pad + "`" * ticks
 
 
+TIER_WORDS = {
+    "app": "APKs only; the store writes the manifest, and the app gets capabilities through the broker",
+    "tweaks": "tweaks, lib/ and top-level APKs; the store writes the manifest, and tweaks reach the "
+              "system only through kt, within their needs",
+    "system": "installed with its own manifest: hooks and services run as root",
+}
+
+
+def need_words(need):
+    """A need= value in plain words."""
+    kind = need_kind(need)
+    m = NEEDS[kind].match(need) if kind in NEEDS else None
+    if not m:
+        return code(need)
+    if kind == "file":
+        n = len(m.group(2).split(","))
+        return "replaces the file %s, only when it is %s" % (
+            code(m.group(1)), "the stock version" if n == 1 else "one of %d known versions" % n)
+    if kind == "prop":
+        return "sets the property %s" % code(m.group(1))
+    if kind == "setting":
+        return "changes the %s setting %s" % (m.group(1), code(m.group(2)))
+    if kind == "service":
+        return "starts and stops the system service %s" % code(m.group(1))
+    if kind == "kill":
+        return "restarts the process %s" % code(m.group(1))
+    if kind == "binder":
+        codes = m.group(2).split(",")
+        return "calls the binder service %s (%s %s)" % (
+            code(m.group(1)), "code" if len(codes) == 1 else "codes", ", ".join(codes))
+    return "**runs anything as root** (first-party only)"
+
+
 def describe(v):
     r = v["review"]
     out = []
+    if r.get("tier"):
+        out.append("- tier **%s**: %s" % (r["tier"], TIER_WORDS[r["tier"]]))
+    for cap, why in sorted(v.get("capabilities", {}).items()):
+        out.append("- asks to %s%s: \u201c%s\u201d" % (
+            "**%s**" % CAPABILITIES[cap] if cap == "root" else CAPABILITIES.get(cap, md(cap)),
+            "" if cap in CAPABILITIES else " (unknown)", md(why)))
     for a in r["apps"]:
         out.append("- installs the app %s (versionCode %d)" % (code(a["package"]), a["version_code"]))
     for s in r["services"]:
@@ -988,16 +1254,28 @@ def describe(v):
     for e in r.get("sh_entries", []):
         out.append("- has the script %s, run from NEMESIS as uid %s" % (code(e["path"]), code(e["uid"])))
     for t in r.get("tweaks", []):
-        out.append("- adds the tweak %s (%s%s%s)" % (code(t["id"]), t["kind"] or "kind?",
-                                                    ", changes the system" if t["risk"] == "system" else "",
-                                                    ", retired" if t["retired"] else ""))
+        out.append("- adds the tweak %s, %s: %s (%s, %s by default, changes system %s%s)" % (
+            code(t["id"]), md(t["name"] or "no name"), md(t["summary"] or "no summary"), t["kind"] or "kind?",
+            t["default"] or "?", t["changes"], ", has disable.sh" if t.get("disable") else ""))
+        for x in t["needs"]:
+            out.append("  - %s: \u201c%s\u201d" % (need_words(x["need"]), md(x["reason"])))
+        if not t["needs"]:
+            out.append("  - needs nothing: it can only read")
+        if t["firmware"] and t["firmware"] != ["*"]:
+            out.append("  - firmware: %s" % ", ".join(code(f) for f in t["firmware"]))
+        if t["conflicts"]:
+            out.append("  - waits for %s to be off" % ", ".join(code(c) for c in t["conflicts"]))
     if not (r["apps"] or r["services"] or r.get("hooks") or r.get("sh_entries") or r.get("tweaks")):
-        out.append("- installs no apps or services")
+        out.append("- installs no apps, services or tweaks")
     root = r.get("root", ["service " + n for n in r["root_services"]])
     out.append("- runs as root: %s" % (", ".join(code(n) for n in root) or "nothing"))
     out.append("- writes to the system: **%s**" % ("yes" if r["system_writes"] else "no"))
     if r["execute"]:
         out.append("- **type=execute** (USB autorun): refused by the store")
+    if r.get("files"):
+        out += ["", "<details><summary>%d file(s)</summary>" % len(r["files"]), ""]
+        out += ["- %s" % code(f) for f in r["files"]]
+        out += ["", "</details>"]
     return out
 
 
@@ -1034,6 +1312,7 @@ def comment(reps, extra_errors=()):
             lines.append("firmware: %s  " % fw)
             if v["requires"]:
                 lines.append("requires: %s  " % ", ".join(code(r) for r in v["requires"]))
+            lines.append("tier: %s  " % code(v["tier"]))
             lines.append("")
             for e in v["errors"]:
                 lines.append("- :x: %s" % md(e))
@@ -1067,6 +1346,7 @@ def main(argv=None):
     ap.add_argument("--cache")
     ap.add_argument("--local-zip", action="append", default=[])
     ap.add_argument("--apps-dir")
+    ap.add_argument("--icons-dir")
     ap.add_argument("--comment")
     ap.add_argument("--labels")
     ap.add_argument("--json")
@@ -1080,7 +1360,9 @@ def main(argv=None):
             return 1
         r["sha256"] = hashlib.sha256(Path(a.inspect).read_bytes()).hexdigest()
         print(json.dumps(r, indent=1))
-        return 0
+        for e in r["errors"]:
+            print("error: %s" % e, file=sys.stderr)
+        return 1 if r["errors"] else 0
     if not a.files:
         ap.error("no files")
 
@@ -1096,7 +1378,7 @@ def main(argv=None):
         base = None
         if a.base:
             base = git_show(a.base, f) or ""  # "": not in the base, so every version is new
-        reps.append(check_app(f, base, a.cache, local, a.apps_dir))
+        reps.append(check_app(f, base, a.cache, local, a.apps_dir, icons_dir=a.icons_dir))
     text = comment(reps)
     if a.comment:
         Path(a.comment).write_text(text)

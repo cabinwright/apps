@@ -4,14 +4,18 @@
 # Log: launcher-restore.log on the stick.
 export PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
 export LD_LIBRARY_PATH=/vendor/lib:/system/lib
-B=/data/nemesis/backup/ev6.launcher
+B=/data/nemesis/backup/cabinwright.menu.launcher
 APP=/system/app
 SUM_APK=768d9fda8efcd2d38dbe34e58ca37d1a
 SUM_ODEX=12c9a96cae35fce9c11fab3918cd912a
 L=/storage/usb0/launcher-restore.log
 log() { echo "$(date) $1" >> $L; }
 
-sum() { md5 "$1" 2>/dev/null | while read -r s f; do echo "$s"; done; }
+# md5 prints "<sum>  <file>"; keep the sum (no cut or awk in toolbox)
+sum() {
+    s=$(md5 "$1" 2>/dev/null)
+    echo "${s%% *}"
+}
 
 log "restore start"
 if [ "$(sum $B/Launcher_WP3.apk)" != $SUM_APK ] || [ "$(sum $B/Launcher_WP3.odex)" != $SUM_ODEX ]; then

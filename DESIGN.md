@@ -1,17 +1,20 @@
-# Cabinwright apps: an app store for NEMESIS head units
+# Cabinwright apps: the index
 
-Status: design, 2026-10-25. Target: the 2023 Kia EV6 head unit (Gen5W, Android 4.4.2,
-`wp_daudioplus_cvev_us`, firmware `CVEV.USA.0000.V015.012.260507`) running
-[NEMESIS](https://github.com/xwtk/hmg_nemesis), and other Gen5W units where packages allow it.
+The signed list of what the Cabinwright store offers on Gen5W head units running
+[NEMESIS](https://github.com/xwtk/hmg_nemesis) (target: the 2023 Kia EV6, Android 4.4.2,
+firmware `CVEV.USA.0000.V015.012.260507`). The system as a whole (tiers, tweaks and their
+needs, capabilities, the broker, `cabinwrightd`) is described in the store's
+[docs/design.md](https://github.com/cabinwright/store/blob/main/docs/design.md); this document
+covers the index: what developers write, what CI checks, and what the car reads.
 
 ## Goals
 
-- Anyone can publish a NEMESIS package by opening a PR that adds one file to the index repo.
+- Anyone can publish a NEMESIS package by opening a PR that adds one file to this repo.
 - The repo owner reviews and merges; that merge is the only trust decision.
-- On the car, an **App Store** app in All Menus lists the apps, installs, updates and removes
-  them, with no ADB or USB stick.
 - The car never installs anything the owner didn't merge, even if the network, GitHub's TLS,
   the sdcard or another app on the car is hostile.
+- The review the owner merges is the one the driver sees: each tweak's needs and each app's
+  capabilities are in the signed index, and the store refuses a zip that says otherwise.
 
 Not goals: payments, ratings, user accounts, hosting the packages (developers host their own
 zips on GitHub Releases), or protecting a car from its owner.
@@ -20,97 +23,138 @@ zips on GitHub Releases), or protecting a car from its owner.
 
 | Piece | Where | What |
 |---|---|---|
-| Index repo | `cabinwright/apps` (this repo) | `apps/<id>.json` per app, CI that checks every PR, and a publish job that builds and **signs** `index.json` |
-| Published index | GitHub Pages, `https://cabinwright.github.io/apps/` | `index.json`, `index.json.sig`, icons |
-| App Store app | `cabinwright/store`: `app/`, NEMESIS package `cabinwright.store` | Browses the index, downloads zips, asks the helper to install |
-| Install helper | `cabinwright/store`: `helper/`, a service in `cabinwright.store` | Runs as root, re-verifies everything itself, runs `nemesis install` |
+| Index repo | `cabinwright/apps` (this repo) | `apps/<id>.json` and `icons/<id>.png` per app, CI that checks every PR, and a publish job that builds and **signs** `index.json` |
+| Published index | GitHub Pages, `https://cabinwright.github.io/apps/` | `index.json`, `index.json.sig`, `icons/`, `reviews/` (the review cache) |
+| Store | `cabinwright/store`, NEMESIS package `cabinwright.store` | The store app shows the index; `cabinwrightd` re-verifies it and installs |
 
 `cabinwright.store` is itself listed in the index, so it updates the same way as everything else.
 
 ## Trust model
 
 The index is signed with the **index signing key** (RSA-3072, `SHA256withRSA`, PKCS#1 v1.5).
-Its public key is pinned in both the app and the helper. The private key exists only in the
-repo's Actions secret `INDEX_SIGNING_KEY` and an offline copy of the owner's.
+Its public key is pinned in the store, in both the app and `cabinwrightd`. The private key
+exists only in the `publish` environment's secret `INDEX_SIGNING_KEY` and in the owner's
+offline copy.
 
 Each version in the index carries the zip's SHA-256 and size, so signing the index covers every
-package it lists. Developers sign their APKs with their own keys as usual; the store doesn't
-rely on that.
+package it lists. Developers sign their APKs with their own keys as usual; the store records
+those certificates at install for the broker, but the index doesn't rely on them.
 
 Why RSA/PKCS#1 v1.5 and not Ed25519: Android 4.4's `java.security` has no Ed25519, while
-`SHA256withRSA` works on every Android version. `SHA256withECDSA` would also work, but RSA
-keeps the verifier trivially portable to the helper and to Python.
-
-What each attacker gets:
+`SHA256withRSA` works on every Android version and is a few lines to verify in Python.
 
 | Attacker | Can | Can't |
 |---|---|---|
-| Network / bad TLS (the car's 2014-era CA store may force a lenient TLS fallback) | Block updates; replay an **old** signed index | Forge an index or a zip (signature + SHA-256) |
+| Network / bad TLS (the car's CA store may force a lenient TLS fallback) | Block updates; replay an **old** signed index | Forge an index or a zip (signature + SHA-256) |
 | Replay of an old index | Nothing, as long as it's newer than the last one seen | Roll back: `sequence` must not decrease, and `expires` bounds staleness to 90 days |
-| Another app on the car / the sdcard (world-writable to sdcard_rw apps) | Swap or delete files on the sdcard (downloads, the index copy, results, status): at worst a failed install or a misleading progress message | Ask the helper for anything: requests come only from the App Store app's provider, which answers only root, system and adb (App Store 1.0 took them from the sdcard; 1.1 ignores and deletes those). Get anything installed that the signed index doesn't list with that exact hash: the helper copies to private storage first, then verifies |
-| A developer whose PR was merged | Whatever their package does, as root | Ship a different zip later: the hash is pinned; a new zip needs a new PR |
-| Someone with write access to the repo but not the secret | Change `apps/` | Publish: only the publish job can sign, and only from `main` |
+| Another app on the car / the sdcard | Swap or delete downloads in progress: at worst a failed install | Get anything installed that the signed index doesn't list with that exact hash: `cabinwrightd` copies the zip to private storage, then verifies it |
+| A developer whose PR was merged | What the review says their package may do: an app's capabilities, a tweak's needs; a `system` package (only `cabinwright.store`) anything | Ship a different zip later: the hash is pinned; a new zip needs a new PR |
+| Someone with write access to the repo but not the secret | Change `apps/` | Publish: only the publish job can sign, only from `main`, only through the `publish` environment |
 
-The owner's review is the real security boundary: a merged package with a root service owns
-every car that installs it. CI exists to make that review fast and hard to get wrong (below).
+The owner's review is the real security boundary. CI exists to make that review fast and hard
+to get wrong (below).
 
 ### Key handling
 
-- Generate with `tools/keygen.py` → `index-signing.pem` (private, never committed) and
-  `keys/<key_id>.pub.pem` (committed). `key_id` names the key, e.g. `kia-apps-2026a`.
-- The app and helper pin a **list** of accepted `{key_id, public key}`, so a key can be rotated
-  by shipping a `cabinwright.store` update that trusts the new key before the index switches over.
-- Lost or leaked key: ship a `cabinwright.store` update that drops it (the update itself must still be
-  signed by a trusted key, so keep a second, offline key in the pinned list from day one).
+- `tools/keygen.py <key_id>` writes the private key to `~/.config/cabinwright/<key_id>.pem`
+  (never committed) and the public key to `keys/<key_id>.pub.pem` (committed). Key ids:
+  `cabinwright-2026a` signs, `cabinwright-2026b` is the offline backup.
+- The store pins a **list** of accepted `{key_id, public key}`, so a key is rotated by shipping
+  a `cabinwright.store` update that trusts the new key before the index switches over.
+- Lost or leaked key: ship a `cabinwright.store` update that drops it, signed by the other key.
+- `sign_index.py` refuses a private key whose public half isn't `keys/<key_id>.pub.pem`, and
+  verifies its own signature before anything is published.
 
-## Index repo layout
+## Repo layout
 
 ```
 apps/<id>.json            one per app, written by the developer (the PR)
+icons/<id>.png            the app's icon, optional
 keys/<key_id>.pub.pem     public signing keys
 schema/app.schema.json    JSON Schema for apps/*.json
-tools/validate.py         checks one or more apps/*.json (used by CI, runnable locally)
-tools/build_index.py      apps/*.json + review data -> index.json
-tools/sign_index.py       index.json -> index.json.sig
+tools/validate.py         checks apps/*.json and reviews their zips (CI, and locally)
+tools/build_index.py      apps/*.json + icons/ + reviews -> index.json
+tools/sign_index.py       index.json -> index.json.sig, and --verify
 tools/keygen.py           new signing key
-.github/workflows/check.yml     on pull_request
-.github/workflows/publish.yml   on push to main, weekly schedule, workflow_dispatch
-CONTRIBUTING.md           how to submit an app
+tests/                    unit tests; tests/vectors/ is shared with the store's verifier tests
+.github/workflows/check.yml           on pull_request: computes the review (no secrets)
+.github/workflows/review-comment.yml  posts it on the PR
+.github/workflows/publish.yml         on push to main, weekly, workflow_dispatch
 ```
 
-### `apps/<id>.json` (what a developer writes)
+### `apps/<id>.json`
 
 ```json
 {
-  "id": "ev6.fixes",
-  "name": "EV6 fixes",
-  "summary": "eth0 guard, Android Auto recovery and a Status app",
-  "description": "Longer text, plain, shown on the app's page.",
+  "id": "cabinwright.tweaks",
+  "name": "Tweaks",
+  "summary": "Small fixes, each with an on/off switch",
+  "description": "Turn on fixes like automatic daylight saving time and skipping the start-up screen.",
   "author": "hazptr",
-  "homepage": "https://github.com/hazptr/ev6-fixes",
+  "homepage": "https://github.com/cabinwright/tweaks",
   "category": "fixes",
-  "icon": "https://raw.githubusercontent.com/hazptr/ev6-fixes/v1.4/status/icon.png",
   "versions": [
     {
-      "version": "1.4",
-      "url": "https://github.com/hazptr/ev6-fixes/releases/download/v1.4/ev6.fixes-v1.4.zip",
+      "version": "1.0",
+      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.0/cabinwright.tweaks-v1.0.zip",
       "sha256": "…64 hex…",
       "firmware": ["CVEV.USA.0000.V015.012.260507"],
-      "requires": ["cabinwright.menu>=1.1"],
-      "notes": "What changed."
+      "tier": "tweaks",
+      "capabilities": {"tweaks": "Shows and switches your tweaks"},
+      "notes": "First release."
     }
   ]
 }
 ```
 
-- `id` is the NEMESIS package id and must equal the filename and `NEMESIS.data`'s `id`.
+- `id` is the NEMESIS package id and must equal the file name and `NEMESIS.data`'s `id`.
 - `versions` is newest first. Older versions may stay listed; the store installs the newest
   one that fits the car's firmware.
-- `firmware` is a list of exact firmware strings, or `["*"]` for packages that only install
-  ordinary apps or services. A package that writes `/system` must list exact firmware.
+- `firmware` is a list of exact firmware strings, or `["*"]` for packages that write nothing to
+  the system. A package that does (a script line flagged as a system write, or a tweak with a
+  `file:` need) must list exact firmware.
+- `tier`: `app`, `tweaks` or `system` (below). Required; CI derives it from the zip and fails
+  if the entry says otherwise.
+- `capabilities`: optional, `{capability: reason}`, the reason in plain words for the driver.
+  Known capabilities: `tweaks`, `logs`, `settings`, `root`. Only packages with an APK may ask.
+- `requires`: other apps in the index, optionally with a minimum version (`id>=1.0`).
 - `category`: one of `fixes`, `apps`, `projection`, `system`, `tools`, `fun`.
-- `icon` optional: a PNG, at most 256x256, at most 64 KiB, `https` only.
-- `deprecated`, `withdrawn`, `replaced_by` optional: retirement, below.
+- `deprecated`, `withdrawn`, `replaced_by`: retirement, below.
+- The icon isn't a field: it is `icons/<id>.png` in this repo, a PNG of at most 256x256 and
+  64 KiB. The publish job copies it to Pages, so its URL never depends on another repo's history.
+
+### Tiers
+
+CI opens the zip and works out the tier from what it holds:
+
+| Tier | The zip holds | Who writes the manifest |
+|---|---|---|
+| `app` | `NEMESIS.data` and top-level `*.apk` | the store |
+| `tweaks` | `NEMESIS.data`, `tweaks/<id>/**`, `lib/**`, and top-level `*.apk` | the store |
+| `system` | anything | the package (only for ids in `SYSTEM_IDS`: `cabinwright.store`) |
+
+A zip with an install hook (`preinstall` and the rest), a `[service.N]`, `type=execute`, an
+`[app.N]` that isn't `kind=apk`, or any file outside those paths can only be `system`. For an
+`app` or `tweaks` entry, each of those is an error naming what was found. The store keeps
+`SYSTEM_IDS` compiled in and never takes it from the index.
+
+### Tweaks in the review
+
+Every `tweaks/<id>/tweak.conf` is parsed (format in the store's design.md). CI fails on:
+
+- a key other than `name`, `summary`, `description`, `firmware`, `kind`, `default`,
+  `conflicts` and `need` (`risk=`, `retired=` and `replaces=` each get their own explanation),
+  a key set twice, a line that isn't `key=value`, or a missing `name`, `summary`, `firmware`,
+  `kind` or `default`;
+- `kind` other than `oneshot`/`service`, `default` other than `on`/`off`, a malformed
+  `firmware=` or `conflicts=`, or a missing `enable.sh` (oneshot) or `run.sh` (service);
+- a `need=` that isn't `<need> | <reason>` with a known need in its exact form, or is listed
+  twice;
+- a oneshot tweak with a `binder:`, `kill:`, `service:` or `root` need and no `disable.sh`: the
+  runner can't undo those steps from its journal.
+
+The review lists, per tweak, its needs in `tweak.conf` order, as `{need, reason}` with both
+sides trimmed. The store compares them exactly with the zip it downloaded.
 
 ### Retiring an app
 
@@ -118,95 +162,99 @@ Entries are **never deleted**: a car that installed an app needs its entry to sa
 offer its removal. An entry is retired instead, by the owner, in a PR:
 
 - `"deprecated": "<plain reason>"`: no longer offered. The store shows it only to cars that
-  have it, as "No longer offered" with the reason; no install, no update; Remove.
-- `"withdrawn": "<plain reason>"`: pulled for safety. The same, plus a warning on the app's
-  page and on the browse screen (when installed) urging removal.
-- `"replaced_by": "<id>"`, with either: the store adds "Get <name> instead" when that app is
-  in the index.
+  have it, with the reason and Remove; no install, no update.
+- `"withdrawn": "<plain reason>"`: pulled for safety. The same, plus a warning urging removal.
+- `"replaced_by": "<id>"`, with either: the store offers that app instead.
 
 A retired entry keeps its versions (so the store can still describe what's installed) but
 can't gain new ones. Un-retiring is a PR that drops the field.
 
-Removal never depends on the index. The helper removes any package **it** installed, by its
-own record in `state.json`, even when the entry has vanished from the index, the index has
-expired (a car offline for more than 90 days) or there is no index at all: removing needs only
-the driver's tap, not trust in the index. Installed packages the index doesn't list show in an
-"Installed" section as "Not in the store", with Remove. The helper still never removes the
-store itself, nor packages it didn't install (those were put there by the owner some other
-way; NEMESIS Manager removes them).
-
-Helpers before 1.1 kept no record. So, once, the first 1.1 helper seeds it: every installed
-package whose id is in the verified, unexpired index (offered or retired), never `cabinwright.store`,
-and logs what it added (`state.json` then says `"seeded": true`). Until such an index is on the
-sdcard it tries again; after the seed, removal never reads the index again.
-
 ### CI on a PR (`check.yml`)
 
-The PR may change only files under `apps/` (one app per PR is the norm; several is allowed).
-For each changed app, `validate.py`:
+The PR may change only `apps/<id>.json` and `icons/<id>.png` (the owner may change anything;
+the comment lists it). The tools run from the base branch, so a PR can't change how it is
+reviewed. For each changed entry, and the entry of each changed icon, `validate.py`:
 
-1. Validates against the schema; checks the `id` against the filename; checks the version
-   strings are unique and newest first.
-2. For each **new or changed** version: downloads `url` (must be `https://github.com/<owner>/<repo>/releases/download/…`,
-   at most 64 MiB, following GitHub's redirect) and checks `sha256`.
-3. Opens the zip: `NEMESIS.data` at the root, its `id` and `version` match the entry.
-4. Inspects what the package does and writes a **review** record:
-   - `types` from `NEMESIS.data`; every `[app.N]` (package name and versionCode, read from the
-     APK with `aapt dump badging` or a Python AXML parser); every `[service.N]` with its `uid`
-     and `mode`.
-   - `root_services`: services with `uid=root` (or no uid).
-   - `system_writes`: any script containing `remount`, `/system/`, `mount -o`, `dd `, `setprop persist.`,
-     `pm disable`, `reboot`, `iptables`, `chmod`/`chown` outside its own dir, `/data/data/` of other apps,
-     `/dev/block`.
-   - `execute`: `type=execute` (USB autorun-style), which the store **refuses outright**.
-   - Every flagged line, with file and line number.
-5. Posts (or updates) one PR comment with the review: what the package installs, what runs as
-   root, and every flagged line. It labels the PR `root`, `system-writes` and `needs-firmware-match`
-   as they apply. `system_writes` with `firmware: ["*"]` is an error.
+1. Validates against the schema; checks the `id` against the file name; checks the versions are
+   unique and newest first, `requires` exist, and the icon is a PNG within the limits.
+2. For each **new or changed** version: downloads `url` (must be a GitHub release asset, at most
+   64 MiB, https all the way) and checks `sha256`.
+3. Opens the zip: `NEMESIS.data` at the root, `id` and `version` match the entry; derives the
+   tier and checks it and the capabilities against the entry; parses every `tweak.conf`.
+4. Writes the **review**: the tier, every file, the APKs (package and versionCode), services,
+   hooks and script entries, each tweak with its needs, what runs as root, whether the package
+   writes to the system, and every flagged script line with file and line number.
+5. Posts one PR comment with the review in plain words (`review-comment.yml`) and labels the PR
+   `root` (something runs as root, a tweak needs `root`, or the app asks for `root`),
+   `system-writes` and `needs-firmware-match`.
 6. Retirement: a PR that deletes (or renames) an `apps/*.json` fails, pointing at
    `deprecated`. So do an empty `deprecated` or `withdrawn`, a `replaced_by` without either or
    naming an id missing from `apps/`, and a new or changed version on a retired entry.
 
 Checks fail on anything malformed or mismatched. Flags don't fail the check: they're for the owner.
 
+### Release placeholders
+
+An entry can be written before its release exists with `"sha256": "pending"`. The url is
+known in advance (`…/releases/download/v<version>/<id>-v<version>.zip`); the hash isn't. Every
+check refuses `pending` with a plain message ("sha256 is the placeholder"), so neither a PR
+nor the publish job can let one through: the index isn't rebuilt until the real hashes are in.
+`tests/test_entries.py` checks the repo's entries are otherwise well formed.
+
 ### Publishing (`publish.yml`)
 
-On push to `main` (and weekly, so `expires` never lapses, and on manual dispatch):
+On push to `main`, weekly (so `expires` never lapses), and on manual dispatch, in the
+`publish` environment:
 
-1. Re-run the checks over every `apps/*.json` and compute the review records (cached by sha256
-   in the `gh-pages` branch so unchanged zips aren't downloaded again).
-2. `build_index.py`: read the currently published `index.json` from `gh-pages` and set
-   `sequence` = old + 1, and at least `MIN_SEQUENCE` (1000): a store that moved from the
-   kia-apps index (frozen, sequence 14 at the move) keeps that index's sequence, so this one
-   starts above it; `generated` = now; `expires` = now + 90 days.
-3. `sign_index.py` with `INDEX_SIGNING_KEY` → `index.json.sig`.
-4. Commit `index.json`, `index.json.sig` and icons to `gh-pages`. GitHub Pages serves it.
+1. Run the tests, then `build_index.py`: re-check every `apps/*.json` (reviews are cached by
+   sha256 in `gh-pages/reviews/`, so unchanged zips aren't downloaded again); copy
+   `icons/<id>.png` to `gh-pages/icons/`; `sequence` = the published one + 1 (1 for the first
+   index); `generated` = now; `expires` = now + 90 days.
+2. `sign_index.py` with `INDEX_SIGNING_KEY` → `index.json.sig`, then verify it.
+3. Commit `index.json`, `index.json.sig`, `icons/` and `reviews/` to `gh-pages`. Pages serves it.
 
 ### `index.json` (what the car reads)
 
 ```json
 {
   "format": 1,
-  "sequence": 42,
+  "sequence": 1,
   "generated": "2026-10-25T18:00:00Z",
   "expires": "2027-01-23T18:00:00Z",
-  "key_id": "kia-apps-2026a",
+  "key_id": "cabinwright-2026a",
   "apps": [
     {
-      "id": "ev6.fixes", "name": "…", "summary": "…", "description": "…", "author": "…",
+      "id": "cabinwright.tweaks", "name": "…", "summary": "…", "description": "…", "author": "…",
       "homepage": "…", "category": "fixes",
-      "icon": {"url": "https://cabinwright.github.io/apps/icons/ev6.fixes.png", "sha256": "…"},
+      "icon": {"url": "https://cabinwright.github.io/apps/icons/cabinwright.tweaks.png", "sha256": "…"},
       "deprecated": "…", "withdrawn": "…", "replaced_by": "…",   (only when set)
       "versions": [
         {
-          "version": "1.4", "url": "…", "sha256": "…", "size": 123456,
-          "firmware": ["CVEV.USA.0000.V015.012.260507"], "requires": ["cabinwright.menu>=1.1"], "notes": "…",
+          "version": "1.0", "url": "…", "sha256": "…", "size": 153894,
+          "firmware": ["CVEV.USA.0000.V015.012.260507"], "requires": [],
+          "tier": "tweaks",
+          "capabilities": {"tweaks": "Shows and switches your tweaks"},
+          "notes": "First release.",
           "review": {
-            "types": ["application", "service"],
-            "apps": [{"package": "dev.ev6fixes.status", "version_code": 12}],
-            "services": [{"name": "eth0-guard", "uid": "root"}],
-            "root_services": ["eth0-guard", "aa-recover", "status"],
-            "system_writes": false,
+            "tier": "tweaks",
+            "types": ["application"],
+            "files": ["NEMESIS.data", "lib/tweakpatch.jar", "tweaks.apk", "tweaks/auto-dst/run.sh", "…"],
+            "apps": [{"package": "dev.cabinwright.tweaks", "version_code": 1}],
+            "services": [], "root_services": [], "hooks": [], "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "auto-dst", "name": "…", "summary": "…", "description": "…",
+                "kind": "service", "default": "on",
+                "firmware": ["CVEV.USA.0000.V015.012.260507"], "conflicts": [],
+                "needs": [
+                  {"need": "binder:com.hkmc.micom.time 3,4", "reason": "…"},
+                  {"need": "setting:system/summer_time", "reason": "…"}
+                ],
+                "changes": "settings", "disable": false
+              }
+            ],
+            "root": [],
+            "system_writes": true,
             "execute": false
           }
         }
@@ -216,139 +264,24 @@ On push to `main` (and weekly, so `expires` never lapses, and on manual dispatch
 }
 ```
 
-`index.json.sig` is the base64 of the `SHA256withRSA` signature over the **exact bytes** of
-`index.json` as served. Verifiers must check the bytes they have, never a re-serialization.
+- `capabilities` is always an object (`{}` when the app asks for nothing).
+- `review.tweaks[].changes` is `files` when the tweak has a `file:` need, else `settings`;
+  `disable` says whether it ships `disable.sh`.
+- `review.root` lists what runs as root: services, hooks, `kind=sh` entries (all `system` only)
+  and tweaks with the `root` need.
+
+`index.json` is ASCII-only JSON. `index.json.sig` is the base64 of the `SHA256withRSA`
+signature over its **exact bytes** as served. Verifiers must check the bytes they have, never a
+re-serialization.
 
 Version comparison everywhere: split on `.`, compare numerically part by part, with missing
 parts counting as 0 (`1.10` > `1.9`, `1.0` == `1`).
 
-## On the car: `cabinwright.store`
+## Testing
 
-### Firmware and installed state
-
-- Firmware string: the system property that holds `CVEV.USA.0000.V015.012.260507` on this car
-  (find the exact property; fall back to showing "unknown firmware" and treating only `["*"]`
-  versions as compatible).
-- Installed packages and versions: the helper writes `nemesis pkg-list` output to the status
-  file (below) every time it runs a request, and every 15 s.
-
-### The App Store app (`dev.cabinwright.store`)
-
-Built with cabinwright/menu's `build-app.sh --ui` on `CarPage` (the stock colours, Mobis font, day/night,
-split-screen aware, slim title row). Shows up in All Menus via `MenuContract`.
-
-- **Browse**: a grid/list of apps with icon, name, summary, an "Installed 1.3 / Update to 1.4"
-  state, and category filter chips. Incompatible firmware greys the install button with a reason.
-- **Retired apps** (`deprecated`, `withdrawn`) show only when installed, with Remove (and "Get
-  <replacement> instead"); never Install or Update. A withdrawn app that's installed gets a
-  warning at the top of the browse screen. **Installed**: packages the helper installed that
-  the index doesn't list (or all of them, with no usable index), as "Not in the store", with
-  Remove.
-- **App page**: description, author, homepage (as text), version notes, and the review spelled
-  out in plain words: "Installs the app Status", "Runs 3 services as root", "Writes to /system
-  (firmware-locked)". Root and `/system` items get a confirmation step on install.
-- **Install / Update / Remove**, with progress (download %, verifying, installing) and the
-  helper's result or error message. `requires` is resolved first: missing requirements are
-  offered as part of the same install, in dependency order.
-- **Updates (n)**: a tab, shown when n > 0 (and counted in the header), listing every installed,
-  non-retired app with a newer version for this firmware: installed → new version and the
-  notes' first line, with Update per row. **Update all** is one plan with one confirmation
-  (the order, and root or `/system` risk): requirements before what needs them, missing
-  requirements installed first, the App Store itself last. The updates run one at a time with
-  progress on each row; the first failure stops the plan, says which app, and leaves the rest
-  untouched.
-- **Expired index** (offline more than 90 days): the list still shows, with "The app list is
-  out of date: connect to the internet to refresh it"; Install, Update and Update all are off
-  (the helper refuses an expired index anyway). Remove still works.
-- A day/night switch recreates the screen; the open page, tab and confirmation are kept.
-- **Refresh**: fetch the index from Pages. Never accept an index whose signature fails, whose
-  `sequence` is lower than the last accepted one, or that has expired; say which.
-- Remembers the last accepted index in app storage and **also** in `/sdcard/cabinwright/store/` (app
-  data is wiped on every NEMESIS update, as Edit Menu found).
-
-Networking on Android 4.4: force TLS 1.2 on `HttpsURLConnection` (it's off by default on API
-16-19 clients). The car's root CA store may not trust GitHub's current chains; bundle the roots
-that `cabinwright.github.io`, `github.com` and `objects.githubusercontent.com` chain to, and use
-them in addition to the system's. Security never depends on TLS, only on the signature and
-hashes, so if a host can't be validated, fail with a clear message rather than disable checking.
-
-### Requests: app → helper
-
-The app can't run `nemesis install` (it needs root), so it asks the helper. Nothing privileged
-happens without the driver's knowledge, so a request has to come from the app, after the
-driver's tap and confirmation, and from nowhere else. The sdcard can't carry that: any app with
-sdcard access can write there. So requests go the way Tweaks hands its switches to tweaksd:
-
-- The app keeps the requests the driver confirmed in its private storage
-  (`files/requests/<time>-<uuid>.json`) and serves them, read-only, through a content provider:
-  `content://dev.cabinwright.store.requests/pending`, rows `(uuid, op, id, version)`. The provider
-  answers only uid 0 (the helper), 1000 (system), 2000 (adb) and the app itself; any other app
-  gets nothing, and nothing can be written through it (insert, update and delete do nothing).
-  Android also refuses `content query` from app uids outright.
-- The helper reads it with the stock `content query`, as root. That starts a VM (about 0.7 s of
-  CPU here), so it reads only while the app's process exists: every 3 s while the app is in
-  the foreground, right after it leaves or (re)starts, and every 15 s in the background.
-- Each request runs once: the helper adds its uuid to `done` in its private `state.json`
-  (the last 200) **before** acting on it, and skips any uuid listed there, even if the
-  provider still shows it. The app drops a request as soon as it sees a result for it, when it
-  gives up on it, and (the provider's `onCreate`) when its process starts, so a request nobody
-  is watching never runs later.
-- `/sdcard/cabinwright/store/requests/` is App Store 1.0's channel. It is never read: the app and the
-  helper delete what's there (the helper logs the names).
-
-Everything else between them is on the sdcard, and none of it is trusted for anything
-privileged:
-
-```
-/sdcard/cabinwright/store/index.json, index.json.sig   the index the app accepted (helper re-checks it)
-/sdcard/cabinwright/store/downloads/<id>-<version>.zip  (helper copies it, then checks it against the index)
-/sdcard/cabinwright/store/results/<uuid>.json           helper → app: {"state": "working" | "ok" | "failed",
-                                                  "step": "verifying", "message": "…", "log": "…"}
-/sdcard/cabinwright/store/status.json                   helper → app: heartbeat + `nemesis pkg-list` +
-                                                firmware + "store_installed": the ids it installed
-```
-
-The app polls `results/` and the heartbeat (and says so plainly if the helper isn't running).
-Results and status are only shown to the driver; another app could fake them, which can
-mislead the screen but not make the helper do anything.
-
-### The helper
-
-A NEMESIS service in `cabinwright.store` (`uid=root`, `mode=restart`). Its shell script launches a small
-Java program as root (with `dalvikvm`), because verifying RSA signatures in `sh` isn't possible
-here. It runs a private copy of `helper.jar` and exits (so svcmgr restarts it) whenever the
-package's `helper.jar` differs from that copy: an update can land while the service starts, and
-old code must not keep running after a fix. For each new request from the provider:
-
-1. Record its uuid as done, then write `results/<uuid>.json` as `working`.
-2. For install: copy `index.json` and `.sig` into private storage, `/data/nemesis/cabinwright/store/`,
-   and verify the signature against the **helper's own** pinned keys, the `sequence` against
-   its own last-accepted sequence (stored in `/data/nemesis/cabinwright/store/state.json`), and `expires`.
-3. For install: find `id` + `version` in the index; refuse retired apps and `execute`; check firmware
-   compatibility. Copy `downloads/<id>-<version>.zip` (a path the helper builds itself) into
-   private storage, then check size and SHA-256 **of the copy**, then open it and check
-   `NEMESIS.data`'s `id` and `version`.
-4. Run `nemesis install --update <private copy>` (or `nemesis uninstall <id>`, only for ids
-   the helper's own record in `state.json` says it installed, never `cabinwright.store`, and without
-   reading the index). Capture its output into the result.
-5. Write the result, add or drop the id in `state.json`'s record, and refresh `status.json`.
-   Delete the private zip copy.
-
-The helper takes only "which operation, id and version" from the app, and only through the
-provider; every check is repeated against its own pinned keys and its own copy of the bytes.
-
-## Seed content
-
-`apps/cabinwright.menu.json`, `apps/ev6.fixes.json` and `apps/cabinwright.store.json`, filled in once those
-repos have CI-built releases (their release zips' SHA-256 come from the releases, not local
-builds).
-
-## Testing on the car
-
-- Unit tests for the Python tools (schema, versions, review flags, index build, sign/verify
-  round trip) and for the Java verifier (the same test vectors on both sides).
-- An index served from a local file for development: the app and helper accept a debug index
-  location only when a file `/data/nemesis/cabinwright/store/debug-index` exists (root-only to create),
-  and still verify it with a separate **test key** that is pinned only in debug builds.
-- End-to-end on the car over ADB: install, update, remove, refusal of a tampered zip, of a bad
-  signature and of a rolled-back sequence.
+- `python3 -m unittest discover -s tests`: schema, versions, the review and its flags, tiers,
+  `tweak.conf`, the index build, sign/verify round trips (those need the `cryptography`
+  package and are skipped without it), and the repo's own entries. Nothing touches the network.
+- `tests/make_vectors.py` regenerates `tests/vectors/`: an index signed with a test key at a
+  fixed time, and a tampered copy. The store's host tests verify the same bytes.
+- `python3 tools/validate.py --inspect <zip>` reviews a local zip without an entry.

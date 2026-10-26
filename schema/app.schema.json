@@ -18,12 +18,6 @@
     "author": {"type": "string", "minLength": 1, "maxLength": 60},
     "homepage": {"type": "string", "maxLength": 300, "pattern": "^https://[^\\s]+$"},
     "category": {"type": "string", "enum": ["fixes", "apps", "projection", "system", "tools", "fun"]},
-    "icon": {
-      "description": "PNG, at most 256x256 and 64 KiB.",
-      "type": "string",
-      "maxLength": 300,
-      "pattern": "^https://[^\\s]+$"
-    },
     "deprecated": {
       "description": "Retires the app: why, in plain words for drivers. The store stops offering it but keeps showing it to cars that have it, with Remove. Entries are never deleted.",
       "type": "string",
@@ -46,7 +40,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["version", "url", "sha256", "firmware"],
+        "required": ["version", "url", "sha256", "firmware", "tier"],
         "additionalProperties": false,
         "properties": {
           "version": {"type": "string", "maxLength": 32, "pattern": "^[0-9]+(\\.[0-9]+)*$"},
@@ -70,6 +64,22 @@
               "type": "string",
               "maxLength": 100,
               "pattern": "^[A-Za-z0-9]+([._-][A-Za-z0-9]+)*(>=[0-9]+(\\.[0-9]+)*)?$"
+            }
+          },
+          "tier": {
+            "description": "app: top-level APKs only. tweaks: tweaks/<id>/ folders, lib/ and top-level APKs. system: anything, only for cabinwright.store. CI derives it from the zip.",
+            "type": "string",
+            "enum": ["app", "tweaks", "system"]
+          },
+          "capabilities": {
+            "description": "What the app asks the store for, each with the reason shown to the driver.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tweaks": {"type": "string", "minLength": 1, "maxLength": 120},
+              "logs": {"type": "string", "minLength": 1, "maxLength": 120},
+              "settings": {"type": "string", "minLength": 1, "maxLength": 120},
+              "root": {"type": "string", "minLength": 1, "maxLength": 120}
             }
           },
           "notes": {"type": "string", "maxLength": 2000}

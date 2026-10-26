@@ -27,7 +27,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR: ${{ github.event.pull_request.number }}
-          # the owner maintains the tools and docs; everyone else may only touch apps/
+          # the owner maintains the tools and docs; everyone else may only touch apps/ and icons/
           AUTHOR: ${{ github.event.pull_request.author_association }}
         run: |
           out="$RUNNER_TEMP/review"
@@ -38,10 +38,15 @@ jobs:
           git worktree add -q "$RUNNER_TEMP/base" "$BASE_SHA"
           tools="$RUNNER_TEMP/base/tools"
 
-          outside=$(git diff --name-only "$BASE_SHA" HEAD | grep -v '^apps/' || true)
+          outside=$(git diff --name-only "$BASE_SHA" HEAD | grep -Ev '^(apps/[^/]+\.json|icons/[^/]+\.png)$' || true)
           # --no-renames: a renamed entry counts as deleted (and its new name as added)
           apps=$(git diff --name-only --no-renames --diff-filter=AM "$BASE_SHA" HEAD -- 'apps/*.json')
           removed=$(git diff --name-only --no-renames --diff-filter=D "$BASE_SHA" HEAD -- 'apps/*.json')
+          # a changed icon is checked with its entry (which must exist)
+          for i in $(git diff --name-only --no-renames --diff-filter=AM "$BASE_SHA" HEAD -- 'icons/*.png'); do
+            f="apps/$(basename "$i" .png).json"
+            case " $apps " in *" $f "*) ;; *) apps="$apps $f" ;; esac
+          done
           status=0
           if [ -n "$apps" ]; then
             # shellcheck disable=SC2086
@@ -58,10 +63,10 @@ jobs:
             status=1
           fi
           if [ -n "$outside" ] && [ "$AUTHOR" = OWNER ]; then
-            printf '\n### Files outside apps/ (owner)\n\n' >> "$out/comment.md"
+            printf '\n### Files outside apps/ and icons/ (owner)\n\n' >> "$out/comment.md"
             for f in $outside; do printf -- '- `%s`\n' "$f" >> "$out/comment.md"; done
           elif [ -n "$outside" ]; then
-            printf '\n### :x: Files outside apps/\n\nA PR may only change apps/<id>.json files:\n\n' >> "$out/comment.md"
+            printf '\n### :x: Files outside apps/ and icons/\n\nA PR may only change apps/<id>.json and icons/<id>.png files:\n\n' >> "$out/comment.md"
             for f in $outside; do printf -- '- `%s`\n' "$f" >> "$out/comment.md"; done
             status=1
           fi

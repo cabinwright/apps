@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Makes a new index signing key (RSA-3072).
 
-usage: keygen.py <key_id> [--private-dir ~/.config/kia-apps] [--keys-dir keys]
+usage: keygen.py <key_id> [--private-dir ~/.config/cabinwright] [--keys-dir keys]
 
 Writes the private key to <private-dir>/<key_id>.pem (PKCS#8, unencrypted so it can go
 straight into the INDEX_SIGNING_KEY secret; mode 600 in a 700 directory) and the public key
@@ -56,7 +56,7 @@ def keygen(key_id, private_dir, keys_dir):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Make a new index signing key.")
     ap.add_argument("key_id")
-    ap.add_argument("--private-dir", default="~/.config/kia-apps")
+    ap.add_argument("--private-dir", default="~/.config/cabinwright")
     ap.add_argument("--keys-dir", default=str(ROOT / "keys"))
     a = ap.parse_args(argv)
     priv, pub, fp = keygen(a.key_id, a.private_dir, a.keys_dir)

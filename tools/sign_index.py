@@ -9,8 +9,8 @@ exact bytes of the file, no trailing newline. It refuses a private key whose pub
 keys/<key_id>.pub.pem for the index's key_id, so a misconfigured secret can't publish an index
 no car would accept, and it verifies its own output with the stdlib verifier below.
 
-The verifier is plain Python on purpose: it is the same small computation the app and the
-helper do in Java, independent of the library that signed.
+The verifier is plain Python on purpose: it is the same small computation the store app and
+cabinwrightd do in Kotlin, independent of the library that signed.
 """
 import argparse
 import base64

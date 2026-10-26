@@ -1,12 +1,17 @@
 #!/system/bin/sh
-# aa-recover: restarts the stock Android Auto receiver when it gets stuck.
-# Stock bug (com.google.android.projection.sink): after the car's own Wi-Fi hotspot
+# aa-reconnect (tweak pack tweaks.projection): restarts the stock Android Auto receiver when it
+# gets stuck.
+# Stock bug (com.google.android.projection.sink = /system/app/HKMC_GPM.apk): after the car's own Wi-Fi hotspot
 # has used the radio, GalConnectionManager can keep a stale "starting" state. Every
 # wireless attempt then logs "current Already AA Starting mode" and never opens its
 # session port: the phone joins the hotspot, times out, and retries every ~3.5 s
 # until the receiver restarts. Killing the receiver (a persistent app, so Android
 # starts it again at once) clears it, and the phone connects on its next try.
-# Runs as a NEMESIS service; output goes to /data/nemesis/logs/wireless.carplay.aa/.
+# Where it sticks: GalConnectionManager.initConnectSession() refuses every start while
+# mStartMode != 0, and only some of GalReceiverService's and WirelessExplorer's paths put it back
+# to 0 (setGpmStartMode(0), allSessionClear()). Fixing that path in HKMC_GPM itself would need a
+# new HKMC_GPM build and a car to test it on, so this keeps the workaround.
+# A service tweak: the runner keeps this running while the switch is on.
 export PATH=/data/nemesis/bin:/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
 SINK=com.google.android.projection.sink
 HITS=6        # stuck lines before acting: two or three per retry, so about three retries
@@ -15,8 +20,8 @@ SPAN=5        # the hits must cover this many seconds (old lines arrive in one b
 COOLDOWN=120  # seconds to leave the receiver alone after a restart
 
 log() { echo "$(date) $1"; }
-# last action, shown by the status app
-last() { mkdir -p /data/nemesis/status && echo "$(date +%s) $1" > /data/nemesis/status/aa-recover.last; }
+# last action, shown in the Tweaks app (status.sh)
+last() { mkdir -p /data/nemesis/tweaks.projection/last && echo "$(date +%s) $1" > /data/nemesis/tweaks.projection/last/aa-reconnect; }
 
 sink_pid() {
     ps | while read -r _u _p _rest; do

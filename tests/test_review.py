@@ -2,7 +2,7 @@
 import unittest
 from unittest import mock
 
-from helpers import FIXTURES, apk, axml, make_zip, nemesis_data, package
+from helpers import AUTO_DST, FIXTURES, apk, axml, make_zip, nemesis_data, package, system_package, tweak_conf, tweak_package
 
 import validate
 
@@ -95,24 +95,25 @@ class Scripts(unittest.TestCase):
         self.assertFalse(validate.RULES["setprop"][0])
         self.assertTrue(validate.RULES["kmod"][0])
 
-    def test_ev6_fixes_scripts(self):
-        # the real ev6.fixes services: root, but no system writes
+    def test_root_service_scripts(self):
+        # the store's service and the projection pack's receiver watchdog: no system writes
         got = {}
-        for name in ("eth0-guard.sh", "aa-recover.sh", "status.sh"):
-            for f in validate.scan_script((FIXTURES / "scripts" / name).read_text(), name, {"dev.ev6fixes.status"}):
+        for name in ("store-helper.sh", "aa-reconnect.sh"):
+            for f in validate.scan_script((FIXTURES / "scripts" / name).read_text(), name, {"dev.cabinwright.store"}):
                 got[(name, f["line"])] = f["rules"]
-        self.assertEqual(got, {("eth0-guard.sh", 28): ["setprop"], ("aa-recover.sh", 29): ["as-uid", "kill"]})
+        self.assertEqual(got, {("store-helper.sh", 17): ["perms-unknown"], ("aa-reconnect.sh", 34): ["as-uid", "kill"]})
 
     def test_launcher_install_script(self):
         f = flags((FIXTURES / "scripts" / "install-launcher.sh").read_text())
-        self.assertEqual(sorted(f), [16, 33, 34, 35, 36, 37, 40, 43, 47])
-        self.assertEqual(f[33], ["remount"])
-        self.assertEqual(f[34], ["system-path"])
+        self.assertEqual(sorted(f), [21, 43, 44, 45, 46, 47, 49, 52, 55, 59])
+        self.assertEqual(f[43], ["remount"])
+        self.assertEqual(f[44], ["system-path"])
+        self.assertEqual(f[49], ["system-path"])  # dalvik-cache
 
     def test_launcher_restore_script(self):
         f = flags((FIXTURES / "scripts" / "restore-launcher.sh").read_text())
-        self.assertEqual(f[29], ["system-path"])  # dalvik-cache
-        self.assertEqual(f[35], ["reboot"])
+        self.assertEqual(f[33], ["system-path"])  # dalvik-cache
+        self.assertEqual(f[39], ["reboot"])
 
 
 @mock.patch.object(validate, "find_aapt", lambda: None)
@@ -122,6 +123,10 @@ class Packages(unittest.TestCase):
             "svc/a.sh": script("sleep 1"), "svc/b.sh": script("mount -o remount,rw /system")}))
         self.assertEqual(r["nemesis"], {"id": "test.pkg", "version": "1.0"})
         rv = r["review"]
+        self.assertEqual(rv["tier"], "system")
+        self.assertEqual(rv["files"], ["NEMESIS.data", "svc/a.sh", "svc/b.sh", "t.apk"])
+        self.assertEqual(r["system_reasons"], ["the service a", "the service b",
+                                               "files other than top-level APKs, tweaks/ and lib/: svc/a.sh, svc/b.sh"])
         self.assertEqual(rv["types"], ["application", "service"])
         self.assertEqual(rv["apps"], [{"package": "dev.test", "version_code": 3}])
         self.assertEqual(rv["services"], [{"name": "a", "uid": "root", "mode": "restart"},
@@ -155,19 +160,132 @@ class Packages(unittest.TestCase):
         with self.assertRaisesRegex(validate.Fail, "postinstall"):
             validate.inspect_zip(z)
 
-    def test_tweaks_run_as_root(self):
-        z = make_zip({"NEMESIS.data": nemesis_data(types="application"),
-                      "tweaks/x/tweak.conf": "name=X\nkind=oneshot\nrisk=system\n",
-                      "tweaks/x/enable.sh": script("setprop a b"),
-                      "tweaks/y/tweak.conf": "name=Y\nkind=service\nretired=1\n", "tweaks/y/run.sh": ""})
-        rv = validate.inspect_zip(z)["review"]
-        self.assertEqual(rv["tweaks"], [
-            {"id": "x", "name": "X", "kind": "oneshot", "risk": "system", "retired": False},
-            {"id": "y", "name": "Y", "kind": "service", "risk": "normal", "retired": True}])
-        self.assertEqual(rv["root"], ["tweak x (through Tweaks)", "tweak y (through Tweaks)"])
+    def test_tweaks_package(self):
+        z = tweak_package(tweaks={"auto-dst": AUTO_DST}, files={"lib/common.sh": script("true")}, with_apk=True)
+        r = validate.inspect_zip(z)
+        self.assertEqual((r["errors"], r["system_reasons"]), ([], []))
+        rv = r["review"]
+        self.assertEqual(rv["tier"], "tweaks")
+        self.assertEqual(rv["apps"], [{"package": "dev.test.tweaks", "version_code": 1}])
+        self.assertEqual(rv["tweaks"], [{
+            "id": "auto-dst", "name": "Automatic daylight saving time",
+            "summary": "Changes the clock for daylight saving time",
+            "description": "Moves the clock forward in March and back in November.",
+            "kind": "service", "default": "on", "firmware": ["CVEV.USA.0000.V015.012.260507"], "conflicts": [],
+            "needs": [
+                {"need": "setting:system/summer_time", "reason": "Turn the head unit's own daylight-saving switch"},
+                {"need": "binder:com.hkmc.micom.time 3,4", "reason": "Set the clock through the head unit's time service"},
+            ],
+            "changes": "settings", "disable": False}])
+        self.assertEqual(rv["root"], [])
+        self.assertFalse(rv["system_writes"])
+
+    def test_file_need_is_a_system_write(self):
+        conf = tweak_conf(extra="need=file:/system/app/X.apk@%s,%s | Replace X\n" % ("a" * 32, "b" * 32))
+        rv = validate.inspect_zip(tweak_package(tweaks={"x": conf}))["review"]
+        self.assertEqual(rv["tweaks"][0]["changes"], "files")
+        self.assertTrue(rv["system_writes"])
         text = "\n".join(validate.describe({"review": rv}))
-        self.assertIn("adds the tweak `x` (oneshot, changes the system)", text)
-        self.assertIn("runs as root: `tweak x (through Tweaks)`", text)
+        self.assertIn("replaces the file `/system/app/X.apk`, only when it is one of 2 known versions", text)
+
+    def test_tweak_layout(self):
+        r = validate.inspect_zip(tweak_package(tweaks={}, files={"tweaks/loose.sh": "", "tweaks/a/run.sh": ""}))
+        self.assertEqual(r["errors"], ["tweaks/loose.sh isn't in a tweak's folder (tweaks/<id>/)",
+                                       "tweaks/a has no tweak.conf"])
+        r = validate.inspect_zip(make_zip({"NEMESIS.data": nemesis_data(types="application")}))
+        self.assertEqual(r["errors"], ["the package installs nothing: no APKs, tweaks/ or lib/"])
+
+    def test_system_package(self):
+        r = validate.inspect_zip(system_package())
+        self.assertEqual(r["review"]["tier"], "system")
+        self.assertEqual(r["review"]["root"], ["service a"])
+
+
+def tweak_errors(conf, files=("enable.sh",), tid="x"):
+    return validate.parse_tweak(tid, conf, set(files))[1]
+
+
+class TweakConf(unittest.TestCase):
+    def test_good(self):
+        t, errs = validate.parse_tweak("auto-dst", AUTO_DST, {"run.sh", "status.sh"})
+        self.assertEqual(errs, [])
+        self.assertEqual([n["need"] for n in t["needs"]], ["setting:system/summer_time", "binder:com.hkmc.micom.time 3,4"])
+        t, errs = validate.parse_tweak("x", "# comment\n\n" + tweak_conf(extra="conflicts=a, b.c\n"), {"enable.sh"})
+        self.assertEqual((errs, t["conflicts"], t["firmware"]), ([], ["a", "b.c"], ["*"]))
+
+    def test_retired_keys(self):
+        for k, v, msg in [("risk", "system", "a tweak changes system files when it has a file: need"),
+                          ("retired", "1", "leave its folder out of the package"),
+                          ("replaces", "aa-recover", "replaces= isn't a tweak.conf key")]:
+            errs = tweak_errors(tweak_conf(extra="%s=%s\n" % (k, v)))
+            self.assertEqual(len(errs), 1, errs)
+            self.assertIn("tweaks/x/tweak.conf:6: %s= isn't a tweak.conf key" % k, errs[0])
+            self.assertIn(msg, errs[0])
+
+    def test_unknown_and_malformed_keys(self):
+        self.assertIn("unknown key colour", tweak_errors(tweak_conf(extra="colour=red\n"))[0])
+        self.assertIn("not key=value", tweak_errors(tweak_conf(extra="just words\n"))[0])
+        self.assertIn("name= is set twice", tweak_errors(tweak_conf(extra="name=Y\n"))[0])
+        self.assertEqual(tweak_errors(""), ["tweaks/x/tweak.conf: missing %s=" % k
+                                            for k in ("name", "summary", "firmware", "kind", "default")])
+        self.assertIn("kind=daemon, should be oneshot or service", tweak_errors(tweak_conf(kind="daemon"))[0])
+        self.assertIn("default=yes, should be on or off", tweak_errors(tweak_conf(default="yes"))[0])
+        self.assertIn("firmware= is * or exact", tweak_errors(tweak_conf(firmware="*,CVEV.X"))[0])
+        self.assertIn("firmware= is * or exact", tweak_errors(tweak_conf(firmware="bad fw"))[0])
+        self.assertIn("conflicts with itself", tweak_errors(tweak_conf(extra="conflicts=x\n"))[0])
+        self.assertIn("isn't a tweak id", tweak_errors(tweak_conf(extra="conflicts=a b\n"))[0])
+        self.assertIn("a tweak id is letters", tweak_errors(tweak_conf(), tid="bad id")[0])
+
+    def test_scripts_for_kind(self):
+        self.assertIn("a kind=oneshot tweak needs enable.sh", tweak_errors(tweak_conf(), files=())[0])
+        self.assertIn("a kind=service tweak needs run.sh", tweak_errors(tweak_conf(kind="service"), files=("enable.sh",))[0])
+
+    def test_needs(self):
+        good = ["file:/system/app/A.apk@" + "0" * 32, "file:/system/b@" + "0" * 32 + "," + "f" * 32,
+                "prop:persist.sys.x", "setting:global/adb_enabled", "setting:secure/x_y",
+                "service:adbd", "kill:com.google.android.projection.sink", "kill:com.x:remote",
+                "binder:com.hkmc.micom.time 4", "binder:media.audio_flinger 1,22,3", "root"]
+        for need in good:
+            conf = tweak_conf(kind="service", extra="need=%s | Because\n" % need)
+            self.assertEqual(tweak_errors(conf, files=("run.sh",)), [], need)
+        bad = [("file:/system/app/A.apk", "should be file:<path>@<md5>"),
+               ("file:/system/app/A.apk@ABC", "should be file:"),
+               ("file:relative@" + "0" * 32, "should be file:"),
+               ("file:/system/a b@" + "0" * 32, "should be file:"),
+               ("file:/system/../x@" + "0" * 32, "the path must name a file"),
+               ("prop:", "should be prop:<name>"),
+               ("setting:system", "should be setting:<system|secure|global>/<name>"),
+               ("setting:other/x", "should be setting:"),
+               ("binder:svc", "should be binder:<service> <code>"),
+               ("binder:svc a,b", "should be binder:"),
+               ("root:x", "should be root"),
+               ("sudo:x", "unknown need 'sudo'"),
+               ("SETTING:system/x", "unknown need")]
+        for need, msg in bad:
+            errs = tweak_errors(tweak_conf(kind="service", extra="need=%s | Because\n" % need), files=("run.sh",))
+            self.assertEqual(len(errs), 1, (need, errs))
+            self.assertIn(msg, errs[0], need)
+        for line in ("need=prop:x", "need=prop:x |", "need=prop:x |   "):
+            self.assertIn("give a reason for the driver", tweak_errors(tweak_conf(extra=line + "\n"))[0])
+        errs = tweak_errors(tweak_conf(extra="need=prop:x | A\nneed=prop:x | B\n"))
+        self.assertIn("need prop:x is listed twice", errs[0])
+
+    def test_reason_keeps_its_words(self):
+        t, _ = validate.parse_tweak("x", tweak_conf(extra="need=prop:a.b|  Keep the \"switch\" | in step  \n"),
+                                    {"enable.sh"})
+        self.assertEqual(t["needs"], [{"need": "prop:a.b", "reason": "Keep the \"switch\" | in step"}])
+
+    def test_oneshot_without_undo_needs_disable(self):
+        for need in ("binder:svc 3", "kill:proc", "service:adbd", "root"):
+            conf = tweak_conf(extra="need=%s | Because\n" % need)
+            errs = tweak_errors(conf)
+            self.assertEqual(len(errs), 1, errs)
+            self.assertIn("must ship disable.sh", errs[0])
+            self.assertEqual(tweak_errors(conf, files=("enable.sh", "disable.sh")), [])
+            self.assertEqual(tweak_errors(tweak_conf(kind="service", extra="need=%s | B\n" % need), files=("run.sh",)), [])
+        # the journal undoes files, props and settings
+        conf = tweak_conf(extra="need=prop:a | A\nneed=setting:system/b | B\nneed=file:/system/c@%s | C\n" % ("0" * 32))
+        self.assertEqual(tweak_errors(conf), [])
 
     def test_execute(self):
         for extra in ("\ntype=execute\n", ""):
@@ -209,9 +327,9 @@ class Axml(unittest.TestCase):
         self.assertEqual(validate.parse_axml_manifest(axml("dev.x", 7, blank_names=True))["version_code"], 7)
 
     def test_real_manifest(self):
-        # Edit Menu (cabinwright.menu 1.3), built with aapt
+        # Edit Menu's manifest (versionCode 1), built with aapt
         m = validate.parse_axml_manifest((FIXTURES / "edit-menu.AndroidManifest.xml").read_bytes())
-        self.assertEqual(m, {"package": "dev.cabinwright.menu", "version_code": 8})
+        self.assertEqual(m, {"package": "dev.cabinwright.menu", "version_code": 1})
 
     def test_aapt_agrees(self):
         aapt = validate.find_aapt()

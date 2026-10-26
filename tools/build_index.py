@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Builds index.json from apps/*.json, for the car.
 
-usage: build_index.py --pages <dir> --key-id <id> [--apps apps] [--first] [--now <ISO time>]
-                      [--base-url https://cabinwright.github.io/apps/] [--min-sequence N]
+usage: build_index.py --pages <dir> --key-id <id> [--apps apps] [--icons icons] [--first]
+                      [--now <ISO time>] [--base-url https://cabinwright.github.io/apps/]
 
 <dir> is a checkout of the gh-pages branch. Reads its index.json for the last sequence
-(--first when there is none yet); the new one is the next, and at least --min-sequence. Reuses its reviews/<sha256>.json so unchanged zips aren't
-downloaded again, and writes back index.json, icons/<id>.png and new reviews. Any app that
-fails the checks fails the build: nothing is published until it's fixed.
+(--first when there is none yet, which makes this one 1); the new one is the next. Reuses its
+reviews/<sha256>.json so unchanged zips aren't downloaded again, and writes back index.json,
+icons/<id>.png (copied from this repo's icons/) and new reviews. Any app that fails the checks
+fails the build: nothing is published until it's fixed.
 
 Sign the result with sign_index.py; the index is only valid together with its .sig.
 """
@@ -45,34 +46,33 @@ def previous_sequence(pages, first):
     return seq
 
 
-def icon(app, pages, base_url, fetcher):
-    """Copies the app's icon into icons/<id>.png; keeps the last good one if the URL breaks."""
-    out = Path(pages) / "icons" / (app["id"] + ".png")
-    data = None
-    try:
-        data = validate.check_icon(app["icon"], fetcher)
-    except validate.Fail as e:
-        print("warning: %s icon: %s" % (app["id"], e), file=sys.stderr)
-        if out.exists():
-            data = out.read_bytes()
-    if data is None:
+def icon(app_id, icons_dir, pages, base_url):
+    """Publishes icons/<id>.png from the repo, if the app has one: {"url", "sha256"} or None."""
+    src = validate.icon_path(icons_dir, app_id)
+    if not src.exists():
         return None
+    data = validate.check_icon(src)
+    out = Path(pages) / "icons" / src.name
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(data)
     return {"url": base_url + "icons/" + out.name, "sha256": hashlib.sha256(data).hexdigest()}
 
 
-def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=validate.fetch, min_sequence=0):
-    seq = max(previous_sequence(pages, first) + 1, min_sequence)
+def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=validate.fetch, icons_dir=None):
+    seq = previous_sequence(pages, first) + 1
+    icons_dir = Path(icons_dir) if icons_dir else Path(apps_dir).parent / "icons"
     cache = Path(pages) / "reviews"
     files = sorted(Path(apps_dir).glob("*.json"))
-    reps = [validate.check_app(f, None, cache, None, apps_dir, fetcher, icons=False) for f in files]
-    bad = [r for r in reps if not validate.ok(r)]
-    if bad:
-        msgs = []
-        for r in bad:
-            msgs += ["%s: %s" % (r["file"], e) for e in r["errors"]]
-            msgs += ["%s %s: %s" % (r["file"], v["version"], e) for v in r["versions"] for e in v["errors"]]
+    reps = [validate.check_app(f, None, cache, None, apps_dir, fetcher, icons_dir=icons_dir) for f in files]
+    msgs = []
+    for r in reps:
+        msgs += ["%s: %s" % (r["file"], e) for e in r["errors"]]
+        msgs += ["%s %s: %s" % (r["file"], v["version"], e) for v in r["versions"] for e in v["errors"]]
+    ids = {f.stem for f in files}
+    for p in sorted(icons_dir.glob("*.png")) if icons_dir.is_dir() else []:
+        if p.stem not in ids:
+            msgs.append("%s: no apps/%s.json for this icon" % (p, p.stem))
+    if msgs:
         raise validate.Fail("\n".join(msgs))
 
     apps, icons = [], set()
@@ -80,11 +80,10 @@ def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=
         a = r["app"]
         entry = {k: a.get(k, "") for k in ("id", "name", "summary", "description", "author",
                                            "homepage", "category")}
-        if a.get("icon"):
-            ic = icon(a, pages, base_url, fetcher)
-            if ic:
-                entry["icon"] = ic
-                icons.add(a["id"] + ".png")
+        ic = icon(a["id"], icons_dir, pages, base_url)
+        if ic:
+            entry["icon"] = ic
+            icons.add(a["id"] + ".png")
         # retired apps stay listed, so cars that have one can show why and offer its removal
         for k in ("deprecated", "withdrawn", "replaced_by"):
             if k in a:
@@ -93,7 +92,8 @@ def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=
         for v, rv in zip(a["versions"], r["versions"]):
             entry["versions"].append({
                 "version": v["version"], "url": v["url"], "sha256": v["sha256"], "size": rv["size"],
-                "firmware": v["firmware"], "requires": v.get("requires", []), "notes": v.get("notes", ""),
+                "firmware": v["firmware"], "requires": v.get("requires", []), "tier": v["tier"],
+                "capabilities": v.get("capabilities", {}), "notes": v.get("notes", ""),
                 "review": rv["review"],
             })
         apps.append(entry)
@@ -114,12 +114,11 @@ def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Build index.json from apps/*.json.")
     ap.add_argument("--apps", default=str(Path(__file__).resolve().parent.parent / "apps"))
+    ap.add_argument("--icons", help="icons/<id>.png (default: icons/ next to --apps)")
     ap.add_argument("--pages", required=True)
     ap.add_argument("--key-id", required=True)
     ap.add_argument("--base-url", default=BASE_URL)
     ap.add_argument("--first", action="store_true")
-    ap.add_argument("--min-sequence", type=int, default=0,
-                    help="lowest sequence to publish: above any index a store may have seen before")
     ap.add_argument("--now", help="build time, e.g. 2026-10-25T18:00:00Z (default: now)")
     a = ap.parse_args(argv)
     if a.now:
@@ -128,7 +127,7 @@ def main(argv=None):
         now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None, microsecond=0)
     base = a.base_url if a.base_url.endswith("/") else a.base_url + "/"
     try:
-        index = build(a.apps, a.pages, a.key_id, now, a.first, base, min_sequence=a.min_sequence)
+        index = build(a.apps, a.pages, a.key_id, now, a.first, base, icons_dir=a.icons)
     except validate.Fail as e:
         print("error: %s" % e, file=sys.stderr)
         return 1
