@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Replace Kia's launcher (Launcher_WP3) with a rebuilt one: the stock APK, untouched,
+# Replace the stock launcher (Launcher_WP3) with a rebuilt one: the stock APK, untouched,
 # plus our classes.dex. Backs the stock APK + odex up first (verified), then
 # re-optimizes like Leafia does. Does not reboot. Undo: restore-launcher.sh.
 # usage (as root): install-launcher.sh <new apk>

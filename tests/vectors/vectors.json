@@ -1,5 +1,5 @@
 {
-  "key_id": "kia-apps-test",
+  "key_id": "apps-test",
   "public_key": "test-key.pub.pem",
   "now": "2026-10-26T00:00:00Z",
   "cases": [
@@ -7,13 +7,13 @@
       "index": "index.json",
       "sig": "index.json.sig",
       "valid": true,
-      "sha256": "cab16e9bad88774c6025a74cad5314a462e2f812565f5073e1e0a5ed06db0e39"
+      "sha256": "324b9a0985edfddc00b3595ad935d76640cd93cae8fea68d7850dbbfaf351b84"
     },
     {
       "index": "index.tampered.json",
       "sig": "index.json.sig",
       "valid": false,
-      "sha256": "9600de726e099a6857810d5399ea1b6a39ea4ec0811f28582283c9b12978a42f"
+      "sha256": "ff88c3f3beec02457a50719c88b7448e84dfed4e0a3d5492f2d57037458fa5d9"
     }
   ]
 }

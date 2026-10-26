@@ -48,7 +48,7 @@ jobs:
             python3 "$tools/validate.py" --base "$BASE_SHA" --comment "$out/comment.md" \
               --labels "$out/labels" $apps || status=1
           else
-            printf '<!-- kia-apps-review -->\n## kia-apps review\n\nNo apps/*.json added or changed.\n' > "$out/comment.md"
+            printf '<!-- cabinwright-apps-review -->\n## Cabinwright apps review\n\nNo apps/*.json added or changed.\n' > "$out/comment.md"
           fi
           # entries are never deleted: cars that installed the app need it in the index to
           # show it as retired and offer its removal

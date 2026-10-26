@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hazptr.github.io/kia-apps/schema/app.schema.json",
-  "title": "kia-apps app entry (apps/<id>.json)",
+  "$id": "https://cabinwright.github.io/apps/schema/app.schema.json",
+  "title": "Cabinwright apps entry (apps/<id>.json)",
   "type": "object",
   "required": ["id", "name", "summary", "author", "category", "versions"],
   "additionalProperties": false,

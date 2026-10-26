@@ -2,10 +2,10 @@
 """Builds index.json from apps/*.json, for the car.
 
 usage: build_index.py --pages <dir> --key-id <id> [--apps apps] [--first] [--now <ISO time>]
-                      [--base-url https://hazptr.github.io/kia-apps/]
+                      [--base-url https://cabinwright.github.io/apps/] [--min-sequence N]
 
 <dir> is a checkout of the gh-pages branch. Reads its index.json for the last sequence
-(--first when there is none yet), reuses its reviews/<sha256>.json so unchanged zips aren't
+(--first when there is none yet); the new one is the next, and at least --min-sequence. Reuses its reviews/<sha256>.json so unchanged zips aren't
 downloaded again, and writes back index.json, icons/<id>.png and new reviews. Any app that
 fails the checks fails the build: nothing is published until it's fixed.
 
@@ -23,7 +23,7 @@ import validate  # noqa: E402
 
 FORMAT = 1
 LIFETIME = datetime.timedelta(days=90)
-BASE_URL = "https://hazptr.github.io/kia-apps/"
+BASE_URL = "https://cabinwright.github.io/apps/"
 
 
 def iso(t):
@@ -62,8 +62,8 @@ def icon(app, pages, base_url, fetcher):
     return {"url": base_url + "icons/" + out.name, "sha256": hashlib.sha256(data).hexdigest()}
 
 
-def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=validate.fetch):
-    seq = previous_sequence(pages, first) + 1
+def build(apps_dir, pages, key_id, now, first=False, base_url=BASE_URL, fetcher=validate.fetch, min_sequence=0):
+    seq = max(previous_sequence(pages, first) + 1, min_sequence)
     cache = Path(pages) / "reviews"
     files = sorted(Path(apps_dir).glob("*.json"))
     reps = [validate.check_app(f, None, cache, None, apps_dir, fetcher, icons=False) for f in files]
@@ -118,6 +118,8 @@ def main(argv=None):
     ap.add_argument("--key-id", required=True)
     ap.add_argument("--base-url", default=BASE_URL)
     ap.add_argument("--first", action="store_true")
+    ap.add_argument("--min-sequence", type=int, default=0,
+                    help="lowest sequence to publish: above any index a store may have seen before")
     ap.add_argument("--now", help="build time, e.g. 2026-10-25T18:00:00Z (default: now)")
     a = ap.parse_args(argv)
     if a.now:
@@ -126,7 +128,7 @@ def main(argv=None):
         now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None, microsecond=0)
     base = a.base_url if a.base_url.endswith("/") else a.base_url + "/"
     try:
-        index = build(a.apps, a.pages, a.key_id, now, a.first, base)
+        index = build(a.apps, a.pages, a.key_id, now, a.first, base, min_sequence=a.min_sequence)
     except validate.Fail as e:
         print("error: %s" % e, file=sys.stderr)
         return 1

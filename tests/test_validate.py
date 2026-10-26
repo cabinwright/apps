@@ -106,10 +106,10 @@ class Apps(unittest.TestCase):
         self.assertIn("refused", self.errors(self.check(entry(versions=[v])))[0])
 
     def test_requires(self):
-        rep = self.check(entry(versions=[dict(self.v, requires=["kia.menu>=1.1"])]))
-        self.assertIn("requires kia.menu", rep["errors"][0])
-        write(self.dir, entry("kia.menu", versions=[dict(self.v, version="1.0")]))
-        rep = self.check(entry(versions=[dict(self.v, requires=["kia.menu>=1.1"])]))
+        rep = self.check(entry(versions=[dict(self.v, requires=["cabinwright.menu>=1.1"])]))
+        self.assertIn("requires cabinwright.menu", rep["errors"][0])
+        write(self.dir, entry("cabinwright.menu", versions=[dict(self.v, version="1.0")]))
+        rep = self.check(entry(versions=[dict(self.v, requires=["cabinwright.menu>=1.1"])]))
         self.assertEqual(rep["errors"], [])
         self.assertIn("newest listed version is 1.0", rep["warnings"][0])
 
@@ -183,18 +183,18 @@ class Apps(unittest.TestCase):
             self.assertIn("**%s**" % k, validate.comment([rep]))
 
     def test_replaced_by(self):
-        rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="kia.new"))
-        self.assertIn("replaced_by names kia.new, which isn't in the index", rep["errors"][0])
-        write(self.dir, entry("kia.new", versions=[self.v]))
-        rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="kia.new"))
+        rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="other.new"))
+        self.assertIn("replaced_by names other.new, which isn't in the index", rep["errors"][0])
+        write(self.dir, entry("other.new", versions=[self.v]))
+        rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="other.new"))
         self.assertEqual(self.errors(rep), [])
-        self.assertIn("replaced by `kia.new`", validate.comment([rep]))
-        rep = self.check(entry(versions=[self.v], replaced_by="kia.new"))
+        self.assertIn("replaced by `other.new`", validate.comment([rep]))
+        rep = self.check(entry(versions=[self.v], replaced_by="other.new"))
         self.assertIn("only goes with deprecated or withdrawn", rep["errors"][0])
         rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="test.pkg"))
         self.assertIn("names the app itself", rep["errors"][0])
-        write(self.dir, entry("kia.new", versions=[self.v], withdrawn="Unsafe."))
-        rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="kia.new"))
+        write(self.dir, entry("other.new", versions=[self.v], withdrawn="Unsafe."))
+        rep = self.check(entry(versions=[self.v], deprecated="Old.", replaced_by="other.new"))
         self.assertIn("withdrawn too", rep["warnings"][0])
 
     def test_no_new_versions_on_a_retired_app(self):
@@ -223,11 +223,11 @@ class Apps(unittest.TestCase):
         self.assertIn("offers it again", rep["warnings"][0])
 
     def test_requiring_a_retired_app_warns(self):
-        write(self.dir, entry("kia.menu", versions=[dict(self.v, version="1.0")], deprecated="Old."))
-        rep = self.check(entry(versions=[dict(self.v, requires=["kia.menu"])]))
+        write(self.dir, entry("cabinwright.menu", versions=[dict(self.v, version="1.0")], deprecated="Old."))
+        rep = self.check(entry(versions=[dict(self.v, requires=["cabinwright.menu"])]))
         self.assertEqual(self.errors(rep), [])
         self.assertIn("which is deprecated", rep["warnings"][0])
-        rep = self.check(entry("kia.menu", versions=[self.v], deprecated="Old."))
+        rep = self.check(entry("cabinwright.menu", versions=[self.v], deprecated="Old."))
         self.assertIn("test.pkg requires this app", rep["warnings"][0])
 
 

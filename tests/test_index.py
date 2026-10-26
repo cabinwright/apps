@@ -59,7 +59,7 @@ class Build(unittest.TestCase):
         self.assertEqual(idx["key_id"], "test-key")
         self.assertEqual([a["id"] for a in idx["apps"]], ["a.pkg", "b.pkg"])
         a = idx["apps"][0]
-        self.assertEqual(a["icon"]["url"], "https://hazptr.github.io/kia-apps/icons/a.pkg.png")
+        self.assertEqual(a["icon"]["url"], "https://cabinwright.github.io/apps/icons/a.pkg.png")
         self.assertTrue((self.pages / "icons" / "a.pkg.png").exists())
         self.assertNotIn("icon", idx["apps"][1])
         self.assertEqual(idx["apps"][1]["description"], "")
@@ -77,6 +77,12 @@ class Build(unittest.TestCase):
         # zips come from the review cache; only the icon is fetched again
         self.assertEqual(self.fetch.calls[calls:], [self.icon])
         self.assertEqual(self.build()["sequence"], 3)
+
+    def test_min_sequence(self):
+        # a store that came from the kia-apps index carries that index's sequence over
+        self.assertEqual(self.build(first=True, min_sequence=1000)["sequence"], 1000)
+        self.assertEqual(self.build(min_sequence=1000)["sequence"], 1001)
+        self.assertEqual(self.build()["sequence"], 1002)
 
     def test_broken_app_fails_the_build(self):
         doc = json.loads((self.apps / "b.pkg.json").read_text())

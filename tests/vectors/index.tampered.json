@@ -3,8 +3,50 @@
   "sequence": 43,
   "generated": "2026-10-25T18:00:00Z",
   "expires": "2027-01-23T18:00:00Z",
-  "key_id": "kia-apps-test",
+  "key_id": "apps-test",
   "apps": [
+    {
+      "id": "cabinwright.menu",
+      "name": "Edit Menu",
+      "summary": "A test",
+      "description": "",
+      "author": "someone",
+      "homepage": "",
+      "category": "tools",
+      "versions": [
+        {
+          "version": "1.1",
+          "url": "https://github.com/o/r/releases/download/v1.1/p-1.1.zip",
+          "sha256": "761232ee4c01d99202f9be349f0713e099075fa109fbc0ffd35871c05650b6cd",
+          "size": 998,
+          "firmware": [
+            "*"
+          ],
+          "requires": [],
+          "notes": "",
+          "review": {
+            "types": [
+              "application",
+              "service"
+            ],
+            "apps": [
+              {
+                "package": "dev.test",
+                "version_code": 3
+              }
+            ],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [],
+            "root": [],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    },
     {
       "id": "ev6.fixes",
       "name": "EV6 fixes",
@@ -17,13 +59,13 @@
         {
           "version": "1.4",
           "url": "https://github.com/o/r/releases/download/v1.4/p-1.4.zip",
-          "sha256": "f77ce131fa54e148c753ee6db84bc6d52dbd65a69d6190542dee51eee168377f",
-          "size": 1112,
+          "sha256": "31e8c706f2ddfabbe8caf3e49649dc1ad0f6af2633561a3ca020fb77ef99b6c2",
+          "size": 1208,
           "firmware": [
             "CVEV.USA.0000.V015.012.260507"
           ],
           "requires": [
-            "kia.menu>=1.1"
+            "cabinwright.menu>=1.1"
           ],
           "notes": "Caf\u00e9 \"quotes\" and a\nnewline.",
           "review": {
@@ -47,44 +89,12 @@
             "root_services": [
               "eth0-guard"
             ],
-            "system_writes": false,
-            "execute": false
-          }
-        }
-      ]
-    },
-    {
-      "id": "kia.menu",
-      "name": "Edit Menu",
-      "summary": "A test",
-      "description": "",
-      "author": "someone",
-      "homepage": "",
-      "category": "tools",
-      "versions": [
-        {
-          "version": "1.1",
-          "url": "https://github.com/o/r/releases/download/v1.1/p-1.1.zip",
-          "sha256": "fcc7c0995338873bb312a68328ba1960d12550ad399eaeacaaa455bc4cfef1bf",
-          "size": 894,
-          "firmware": [
-            "*"
-          ],
-          "requires": [],
-          "notes": "",
-          "review": {
-            "types": [
-              "application",
-              "service"
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [],
+            "root": [
+              "service eth0-guard"
             ],
-            "apps": [
-              {
-                "package": "dev.test",
-                "version_code": 3
-              }
-            ],
-            "services": [],
-            "root_services": [],
             "system_writes": false,
             "execute": false
           }

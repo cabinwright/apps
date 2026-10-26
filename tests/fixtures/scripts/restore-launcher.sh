@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Restore Kia's stock launcher from the backup taken before it was replaced, then reboot.
+# Restore the stock launcher from the backup taken before it was replaced, then reboot.
 # Run from the USB stick (NEMESIS.data type=execute), which runs with full root.
 # Log: launcher-restore.log on the stick.
 export PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin

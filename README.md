@@ -1,8 +1,13 @@
-# kia-apps
+# Cabinwright apps
 
-The index for the **App Store** on Kia/Hyundai Gen5W head units running
+The index for **Cabinwright**, the app store for Kia/Hyundai Gen5W head units running
 [NEMESIS](https://github.com/xwtk/hmg_nemesis): one `apps/<id>.json` per app, checked on every
-PR and published as a signed `index.json` at <https://hazptr.github.io/kia-apps/>.
+PR and published as a signed `index.json` at <https://cabinwright.github.io/apps/>.
+
+This index took over from `hazptr/kia-apps` (frozen) when the project became Cabinwright: the
+store, Edit Menu and Tweaks have new ids (`cabinwright.store`, `cabinwright.menu`,
+`cabinwright.tweaks`), the tweak packs kept theirs, and the signing keys are the same. Moving a
+car over: the store's [docs/migrating-from-kia.md](https://github.com/cabinwright/store/blob/main/docs/migrating-from-kia.md).
 
 - Submitting an app: [CONTRIBUTING.md](CONTRIBUTING.md).
 - How it fits together and the trust model: [DESIGN.md](DESIGN.md).

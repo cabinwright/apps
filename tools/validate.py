@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks apps/<id>.json files for the kia-apps index and reviews what each package does.
+"""Checks apps/<id>.json files for the Cabinwright apps index and reviews what each package does.
 
 usage: validate.py [options] apps/<id>.json ...
        validate.py --inspect <package.zip>     review a local zip, no json needed
@@ -54,7 +54,7 @@ REVIEW_VERSION = 2
 RELEASE_URL = re.compile(
     r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/releases/download/[^/?#\s]+/[^/?#\s]+$")
 LABELS = ("root", "system-writes", "needs-firmware-match")
-MARKER = "<!-- kia-apps-review -->"
+MARKER = "<!-- cabinwright-apps-review -->"
 
 
 class Fail(Exception):
@@ -149,7 +149,7 @@ def fetch(url, limit):
     if not url.startswith("https://"):
         raise Fail("not an https URL: %s" % url)
     opener = urllib.request.build_opener(HttpsOnly)
-    req = urllib.request.Request(url, headers={"User-Agent": "kia-apps-validate"})
+    req = urllib.request.Request(url, headers={"User-Agent": "cabinwright-apps-validate"})
     try:
         with opener.open(req, timeout=120) as r:
             n = r.headers.get("Content-Length")
@@ -1002,7 +1002,7 @@ def describe(v):
 
 
 def comment(reps, extra_errors=()):
-    lines = [MARKER, "## kia-apps review", ""]
+    lines = [MARKER, "## Cabinwright apps review", ""]
     good = all(ok(r) for r in reps) and not extra_errors
     lines.append("All checks passed." if good else "**Checks failed**: see the errors below.")
     for e in extra_errors:

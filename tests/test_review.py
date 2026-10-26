@@ -209,9 +209,9 @@ class Axml(unittest.TestCase):
         self.assertEqual(validate.parse_axml_manifest(axml("dev.x", 7, blank_names=True))["version_code"], 7)
 
     def test_real_manifest(self):
-        # kia-menu's Edit Menu, built with aapt
-        m = validate.parse_axml_manifest((FIXTURES / "kia-menu-editor.AndroidManifest.xml").read_bytes())
-        self.assertEqual(m, {"package": "dev.kiamenu.editor", "version_code": 6})
+        # Edit Menu (cabinwright.menu 1.3), built with aapt
+        m = validate.parse_axml_manifest((FIXTURES / "edit-menu.AndroidManifest.xml").read_bytes())
+        self.assertEqual(m, {"package": "dev.cabinwright.menu", "version_code": 8})
 
     def test_aapt_agrees(self):
         aapt = validate.find_aapt()

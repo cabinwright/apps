@@ -43,14 +43,14 @@ jobs:
           outside=$(gh api --paginate "repos/$REPO/pulls/$pr/files?per_page=100" --jq '.[].filename' \
             | grep -v '^apps/' || true)
           if [ -n "$outside" ]; then
-            printf '<!-- kia-apps-review -->\n## kia-apps review\n\n:x: This PR changes files outside apps/, so no review is posted. A PR may only change apps/<id>.json files.\n' > body.md
+            printf '<!-- cabinwright-apps-review -->\n## Cabinwright apps review\n\n:x: This PR changes files outside apps/, so no review is posted. A PR may only change apps/<id>.json files.\n' > body.md
             : > review/labels
           else
             head -c 60000 review/comment.md > body.md
           fi
 
           id=$(gh api --paginate "repos/$REPO/issues/$pr/comments?per_page=100" \
-            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- kia-apps-review -->"))) | .id' | head -n1)
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- cabinwright-apps-review -->"))) | .id' | head -n1)
           if [ -n "$id" ]; then
             gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@body.md > /dev/null
           else

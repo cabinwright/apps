@@ -27,21 +27,21 @@ sha256sum pkg.zip          # macOS: shasum -a 256 pkg.zip
 
 ```json
 {
-  "id": "kia.tweaks",
+  "id": "cabinwright.tweaks",
   "name": "Tweaks",
   "summary": "Small fixes, each with an on/off switch",
   "description": "Turn on fixes like automatic daylight saving time and skipping the start-up screen.",
   "author": "hazptr",
-  "homepage": "https://github.com/hazptr/kia-tweaks",
+  "homepage": "https://github.com/cabinwright/tweaks",
   "category": "fixes",
-  "icon": "https://raw.githubusercontent.com/hazptr/kia-tweaks/<commit>/icon.png",
+  "icon": "https://raw.githubusercontent.com/cabinwright/tweaks/<commit>/icon.png",
   "versions": [
     {
       "version": "1.0",
-      "url": "https://github.com/hazptr/kia-tweaks/releases/download/v1.0/kia.tweaks-v1.0.zip",
+      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.0/cabinwright.tweaks-v1.0.zip",
       "sha256": "<64 hex digits>",
       "firmware": ["CVEV.USA.0000.V015.012.260507"],
-      "requires": ["kia.menu>=1.1"],
+      "requires": ["cabinwright.menu>=1.1"],
       "notes": "What changed."
     }
   ]
@@ -110,7 +110,7 @@ The owner retires an app with a PR that keeps the file and sets:
 
 ```json
   "deprecated": "Built into Tweaks now.",
-  "replaced_by": "kia.tweaks",
+  "replaced_by": "cabinwright.tweaks",
 ```
 
 - `deprecated`: why, in plain words for drivers. It can't be empty. The store stops offering

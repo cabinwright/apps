@@ -1,4 +1,4 @@
-# kia-apps: an app store for NEMESIS head units
+# Cabinwright apps: an app store for NEMESIS head units
 
 Status: design, 2026-10-25. Target: the 2023 Kia EV6 head unit (Gen5W, Android 4.4.2,
 `wp_daudioplus_cvev_us`, firmware `CVEV.USA.0000.V015.012.260507`) running
@@ -20,12 +20,12 @@ zips on GitHub Releases), or protecting a car from its owner.
 
 | Piece | Where | What |
 |---|---|---|
-| Index repo | `hazptr/kia-apps` (this repo) | `apps/<id>.json` per app, CI that checks every PR, and a publish job that builds and **signs** `index.json` |
-| Published index | GitHub Pages, `https://hazptr.github.io/kia-apps/` | `index.json`, `index.json.sig`, icons |
-| App Store app | `kia-store/app`, NEMESIS package `kia.store` | Browses the index, downloads zips, asks the helper to install |
-| Install helper | `kia-store/helper`, a service in `kia.store` | Runs as root, re-verifies everything itself, runs `nemesis install` |
+| Index repo | `cabinwright/apps` (this repo) | `apps/<id>.json` per app, CI that checks every PR, and a publish job that builds and **signs** `index.json` |
+| Published index | GitHub Pages, `https://cabinwright.github.io/apps/` | `index.json`, `index.json.sig`, icons |
+| App Store app | `cabinwright/store`: `app/`, NEMESIS package `cabinwright.store` | Browses the index, downloads zips, asks the helper to install |
+| Install helper | `cabinwright/store`: `helper/`, a service in `cabinwright.store` | Runs as root, re-verifies everything itself, runs `nemesis install` |
 
-`kia.store` is itself listed in the index, so it updates the same way as everything else.
+`cabinwright.store` is itself listed in the index, so it updates the same way as everything else.
 
 ## Trust model
 
@@ -59,8 +59,8 @@ every car that installs it. CI exists to make that review fast and hard to get w
 - Generate with `tools/keygen.py` → `index-signing.pem` (private, never committed) and
   `keys/<key_id>.pub.pem` (committed). `key_id` names the key, e.g. `kia-apps-2026a`.
 - The app and helper pin a **list** of accepted `{key_id, public key}`, so a key can be rotated
-  by shipping a `kia.store` update that trusts the new key before the index switches over.
-- Lost or leaked key: ship a `kia.store` update that drops it (the update itself must still be
+  by shipping a `cabinwright.store` update that trusts the new key before the index switches over.
+- Lost or leaked key: ship a `cabinwright.store` update that drops it (the update itself must still be
   signed by a trusted key, so keep a second, offline key in the pinned list from day one).
 
 ## Index repo layout
@@ -96,7 +96,7 @@ CONTRIBUTING.md           how to submit an app
       "url": "https://github.com/hazptr/ev6-fixes/releases/download/v1.4/ev6.fixes-v1.4.zip",
       "sha256": "…64 hex…",
       "firmware": ["CVEV.USA.0000.V015.012.260507"],
-      "requires": ["kia.menu>=1.1"],
+      "requires": ["cabinwright.menu>=1.1"],
       "notes": "What changed."
     }
   ]
@@ -136,7 +136,7 @@ store itself, nor packages it didn't install (those were put there by the owner 
 way; NEMESIS Manager removes them).
 
 Helpers before 1.1 kept no record. So, once, the first 1.1 helper seeds it: every installed
-package whose id is in the verified, unexpired index (offered or retired), never `kia.store`,
+package whose id is in the verified, unexpired index (offered or retired), never `cabinwright.store`,
 and logs what it added (`state.json` then says `"seeded": true`). Until such an index is on the
 sdcard it tries again; after the seed, removal never reads the index again.
 
@@ -176,7 +176,9 @@ On push to `main` (and weekly, so `expires` never lapses, and on manual dispatch
 1. Re-run the checks over every `apps/*.json` and compute the review records (cached by sha256
    in the `gh-pages` branch so unchanged zips aren't downloaded again).
 2. `build_index.py`: read the currently published `index.json` from `gh-pages` and set
-   `sequence` = old + 1; `generated` = now; `expires` = now + 90 days.
+   `sequence` = old + 1, and at least `MIN_SEQUENCE` (1000): a store that moved from the
+   kia-apps index (frozen, sequence 14 at the move) keeps that index's sequence, so this one
+   starts above it; `generated` = now; `expires` = now + 90 days.
 3. `sign_index.py` with `INDEX_SIGNING_KEY` → `index.json.sig`.
 4. Commit `index.json`, `index.json.sig` and icons to `gh-pages`. GitHub Pages serves it.
 
@@ -193,12 +195,12 @@ On push to `main` (and weekly, so `expires` never lapses, and on manual dispatch
     {
       "id": "ev6.fixes", "name": "…", "summary": "…", "description": "…", "author": "…",
       "homepage": "…", "category": "fixes",
-      "icon": {"url": "https://hazptr.github.io/kia-apps/icons/ev6.fixes.png", "sha256": "…"},
+      "icon": {"url": "https://cabinwright.github.io/apps/icons/ev6.fixes.png", "sha256": "…"},
       "deprecated": "…", "withdrawn": "…", "replaced_by": "…",   (only when set)
       "versions": [
         {
           "version": "1.4", "url": "…", "sha256": "…", "size": 123456,
-          "firmware": ["CVEV.USA.0000.V015.012.260507"], "requires": ["kia.menu>=1.1"], "notes": "…",
+          "firmware": ["CVEV.USA.0000.V015.012.260507"], "requires": ["cabinwright.menu>=1.1"], "notes": "…",
           "review": {
             "types": ["application", "service"],
             "apps": [{"package": "dev.ev6fixes.status", "version_code": 12}],
@@ -220,7 +222,7 @@ On push to `main` (and weekly, so `expires` never lapses, and on manual dispatch
 Version comparison everywhere: split on `.`, compare numerically part by part, with missing
 parts counting as 0 (`1.10` > `1.9`, `1.0` == `1`).
 
-## On the car: `kia.store`
+## On the car: `cabinwright.store`
 
 ### Firmware and installed state
 
@@ -230,9 +232,9 @@ parts counting as 0 (`1.10` > `1.9`, `1.0` == `1`).
 - Installed packages and versions: the helper writes `nemesis pkg-list` output to the status
   file (below) every time it runs a request, and every 15 s.
 
-### The App Store app (`dev.kiastore`)
+### The App Store app (`dev.cabinwright.store`)
 
-Built with kia-menu's `build-app.sh --ui` on `KiaPage` (Kia's colours, Mobis font, day/night,
+Built with cabinwright/menu's `build-app.sh --ui` on `CarPage` (the stock colours, Mobis font, day/night,
 split-screen aware, slim title row). Shows up in All Menus via `MenuContract`.
 
 - **Browse**: a grid/list of apps with icon, name, summary, an "Installed 1.3 / Update to 1.4"
@@ -261,12 +263,12 @@ split-screen aware, slim title row). Shows up in All Menus via `MenuContract`.
 - A day/night switch recreates the screen; the open page, tab and confirmation are kept.
 - **Refresh**: fetch the index from Pages. Never accept an index whose signature fails, whose
   `sequence` is lower than the last accepted one, or that has expired; say which.
-- Remembers the last accepted index in app storage and **also** in `/sdcard/kia-store/` (app
-  data is wiped on every NEMESIS update, as kia-menu found).
+- Remembers the last accepted index in app storage and **also** in `/sdcard/cabinwright/store/` (app
+  data is wiped on every NEMESIS update, as Edit Menu found).
 
 Networking on Android 4.4: force TLS 1.2 on `HttpsURLConnection` (it's off by default on API
 16-19 clients). The car's root CA store may not trust GitHub's current chains; bundle the roots
-that `hazptr.github.io`, `github.com` and `objects.githubusercontent.com` chain to, and use
+that `cabinwright.github.io`, `github.com` and `objects.githubusercontent.com` chain to, and use
 them in addition to the system's. Security never depends on TLS, only on the signature and
 hashes, so if a host can't be validated, fail with a clear message rather than disable checking.
 
@@ -275,11 +277,11 @@ hashes, so if a host can't be validated, fail with a clear message rather than d
 The app can't run `nemesis install` (it needs root), so it asks the helper. Nothing privileged
 happens without the driver's knowledge, so a request has to come from the app, after the
 driver's tap and confirmation, and from nowhere else. The sdcard can't carry that: any app with
-sdcard access can write there. So requests go the way kia-tweaks hands its switches to tweaksd:
+sdcard access can write there. So requests go the way Tweaks hands its switches to tweaksd:
 
 - The app keeps the requests the driver confirmed in its private storage
   (`files/requests/<time>-<uuid>.json`) and serves them, read-only, through a content provider:
-  `content://dev.kiastore.requests/pending`, rows `(uuid, op, id, version)`. The provider
+  `content://dev.cabinwright.store.requests/pending`, rows `(uuid, op, id, version)`. The provider
   answers only uid 0 (the helper), 1000 (system), 2000 (adb) and the app itself; any other app
   gets nothing, and nothing can be written through it (insert, update and delete do nothing).
   Android also refuses `content query` from app uids outright.
@@ -291,18 +293,18 @@ sdcard access can write there. So requests go the way kia-tweaks hands its switc
   provider still shows it. The app drops a request as soon as it sees a result for it, when it
   gives up on it, and (the provider's `onCreate`) when its process starts, so a request nobody
   is watching never runs later.
-- `/sdcard/kia-store/requests/` is App Store 1.0's channel. It is never read: the app and the
+- `/sdcard/cabinwright/store/requests/` is App Store 1.0's channel. It is never read: the app and the
   helper delete what's there (the helper logs the names).
 
 Everything else between them is on the sdcard, and none of it is trusted for anything
 privileged:
 
 ```
-/sdcard/kia-store/index.json, index.json.sig   the index the app accepted (helper re-checks it)
-/sdcard/kia-store/downloads/<id>-<version>.zip  (helper copies it, then checks it against the index)
-/sdcard/kia-store/results/<uuid>.json           helper → app: {"state": "working" | "ok" | "failed",
+/sdcard/cabinwright/store/index.json, index.json.sig   the index the app accepted (helper re-checks it)
+/sdcard/cabinwright/store/downloads/<id>-<version>.zip  (helper copies it, then checks it against the index)
+/sdcard/cabinwright/store/results/<uuid>.json           helper → app: {"state": "working" | "ok" | "failed",
                                                   "step": "verifying", "message": "…", "log": "…"}
-/sdcard/kia-store/status.json                   helper → app: heartbeat + `nemesis pkg-list` +
+/sdcard/cabinwright/store/status.json                   helper → app: heartbeat + `nemesis pkg-list` +
                                                 firmware + "store_installed": the ids it installed
 ```
 
@@ -312,22 +314,22 @@ mislead the screen but not make the helper do anything.
 
 ### The helper
 
-A NEMESIS service in `kia.store` (`uid=root`, `mode=restart`). Its shell script launches a small
+A NEMESIS service in `cabinwright.store` (`uid=root`, `mode=restart`). Its shell script launches a small
 Java program as root (with `dalvikvm`), because verifying RSA signatures in `sh` isn't possible
 here. It runs a private copy of `helper.jar` and exits (so svcmgr restarts it) whenever the
 package's `helper.jar` differs from that copy: an update can land while the service starts, and
 old code must not keep running after a fix. For each new request from the provider:
 
 1. Record its uuid as done, then write `results/<uuid>.json` as `working`.
-2. For install: copy `index.json` and `.sig` into private storage, `/data/nemesis/kia-store/`,
+2. For install: copy `index.json` and `.sig` into private storage, `/data/nemesis/cabinwright/store/`,
    and verify the signature against the **helper's own** pinned keys, the `sequence` against
-   its own last-accepted sequence (stored in `/data/nemesis/kia-store/state.json`), and `expires`.
+   its own last-accepted sequence (stored in `/data/nemesis/cabinwright/store/state.json`), and `expires`.
 3. For install: find `id` + `version` in the index; refuse retired apps and `execute`; check firmware
    compatibility. Copy `downloads/<id>-<version>.zip` (a path the helper builds itself) into
    private storage, then check size and SHA-256 **of the copy**, then open it and check
    `NEMESIS.data`'s `id` and `version`.
 4. Run `nemesis install --update <private copy>` (or `nemesis uninstall <id>`, only for ids
-   the helper's own record in `state.json` says it installed, never `kia.store`, and without
+   the helper's own record in `state.json` says it installed, never `cabinwright.store`, and without
    reading the index). Capture its output into the result.
 5. Write the result, add or drop the id in `state.json`'s record, and refresh `status.json`.
    Delete the private zip copy.
@@ -337,7 +339,7 @@ provider; every check is repeated against its own pinned keys and its own copy o
 
 ## Seed content
 
-`apps/kia.menu.json`, `apps/ev6.fixes.json` and `apps/kia.store.json`, filled in once those
+`apps/cabinwright.menu.json`, `apps/ev6.fixes.json` and `apps/cabinwright.store.json`, filled in once those
 repos have CI-built releases (their release zips' SHA-256 come from the releases, not local
 builds).
 
@@ -346,7 +348,7 @@ builds).
 - Unit tests for the Python tools (schema, versions, review flags, index build, sign/verify
   round trip) and for the Java verifier (the same test vectors on both sides).
 - An index served from a local file for development: the app and helper accept a debug index
-  location only when a file `/data/nemesis/kia-store/debug-index` exists (root-only to create),
+  location only when a file `/data/nemesis/cabinwright/store/debug-index` exists (root-only to create),
   and still verify it with a separate **test key** that is pinned only in debug builds.
 - End-to-end on the car over ADB: install, update, remove, refusal of a tampered zip, of a bad
   signature and of a rolled-back sequence.

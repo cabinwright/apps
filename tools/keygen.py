@@ -5,7 +5,7 @@ usage: keygen.py <key_id> [--private-dir ~/.config/kia-apps] [--keys-dir keys]
 
 Writes the private key to <private-dir>/<key_id>.pem (PKCS#8, unencrypted so it can go
 straight into the INDEX_SIGNING_KEY secret; mode 600 in a 700 directory) and the public key
-to <keys-dir>/<key_id>.pub.pem, which is committed and pinned in kia.store. Never overwrites
+to <keys-dir>/<key_id>.pub.pem, which is committed and pinned in cabinwright.store. Never overwrites
 either. The private key is never printed.
 """
 import argparse
