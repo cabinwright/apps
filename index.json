@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1000,
-  "generated": "2026-10-26T12:32:27Z",
-  "expires": "2027-01-24T12:32:27Z",
+  "sequence": 1001,
+  "generated": "2026-10-26T12:49:52Z",
+  "expires": "2027-01-24T12:49:52Z",
   "key_id": "kia-apps-2026a",
   "apps": [
     {
@@ -19,15 +19,15 @@
       },
       "versions": [
         {
-          "version": "1.3",
-          "url": "https://github.com/cabinwright/menu/releases/download/v1.3/cabinwright.menu-v1.3.zip",
-          "sha256": "89e59a16c379bf863dd47967e0862ba213718470eb6dea997e4343d4e480ee35",
-          "size": 28286,
+          "version": "1.3.1",
+          "url": "https://github.com/cabinwright/menu/releases/download/v1.3.1/cabinwright.menu-v1.3.1.zip",
+          "sha256": "6577df40f22a8a6bb13780ce62cb38896ec9a575c854ed87247010238fbbf7dc",
+          "size": 29164,
           "firmware": [
             "*"
           ],
           "requires": [],
-          "notes": "The new home of Edit Menu. Takes over your menu layout from the earlier Edit Menu (cabinwright.menu).",
+          "notes": "The new home of Edit Menu. Takes over your menu layout from the earlier Edit Menu.",
           "review": {
             "types": [
               "application"
@@ -35,7 +35,7 @@
             "apps": [
               {
                 "package": "dev.cabinwright.menu",
-                "version_code": 8
+                "version_code": 9
               }
             ],
             "services": [],
@@ -64,15 +64,15 @@
       },
       "versions": [
         {
-          "version": "1.2",
-          "url": "https://github.com/cabinwright/store/releases/download/v1.2/cabinwright.store-v1.2.zip",
-          "sha256": "8f779cec5b3c62074b3e7f65019df9e5dda5712625bb9b22eb3234769937f22b",
-          "size": 86651,
+          "version": "1.2.1",
+          "url": "https://github.com/cabinwright/store/releases/download/v1.2.1/cabinwright.store-v1.2.1.zip",
+          "sha256": "46dcc6d0bd0e720284ba2ab05a79a5c13abb7ba6bb3058516871b3b260779b4c",
+          "size": 87575,
           "firmware": [
             "*"
           ],
           "requires": [],
-          "notes": "Now called Cabinwright. Takes over from the App Store (cabinwright.store): what it installed, and its updates.",
+          "notes": "Now called Cabinwright. Takes over from the earlier App Store: what it installed, and its updates.",
           "review": {
             "types": [
               "application",
@@ -81,7 +81,7 @@
             "apps": [
               {
                 "package": "dev.cabinwright.store",
-                "version_code": 2
+                "version_code": 3
               }
             ],
             "services": [
@@ -120,15 +120,15 @@
       },
       "versions": [
         {
-          "version": "1.4",
-          "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4/cabinwright.tweaks-v1.4.zip",
-          "sha256": "cac87d4ccc840d6dae308228056c97fe3a36224bd98d17734dfa3b777a9a3a33",
-          "size": 170465,
+          "version": "1.4.1",
+          "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4.1/cabinwright.tweaks-v1.4.1.zip",
+          "sha256": "c9dac974c6a075b870c11c2c2b55dacdea26b8f883676355924976fe58b3f7ce",
+          "size": 171330,
           "firmware": [
             "CVEV.USA.0000.V015.012.260507"
           ],
           "requires": [],
-          "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks (cabinwright.tweaks) without turning anything off.",
+          "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks without turning anything off.",
           "review": {
             "types": [
               "application",
@@ -137,7 +137,7 @@
             "apps": [
               {
                 "package": "dev.cabinwright.tweaks",
-                "version_code": 5
+                "version_code": 6
               }
             ],
             "services": [
@@ -217,28 +217,28 @@
           ],
           "notes": "Works with the new Tweaks (cabinwright.tweaks).",
           "review": {
-            "types": [
-              "application"
-            ],
             "apps": [],
-            "services": [],
-            "root_services": [],
+            "execute": false,
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [
-              {
-                "id": "adb-wifi",
-                "name": "ADB over Wi-Fi",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              }
-            ],
             "root": [
               "tweak adb-wifi (through Tweaks)"
             ],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": true,
-            "execute": false
+            "tweaks": [
+              {
+                "id": "adb-wifi",
+                "kind": "oneshot",
+                "name": "ADB over Wi-Fi",
+                "retired": false,
+                "risk": "system"
+              }
+            ],
+            "types": [
+              "application"
+            ]
           }
         },
         {
@@ -254,28 +254,28 @@
           ],
           "notes": "First release. Replaces the TCP ADB package.",
           "review": {
-            "types": [
-              "application"
-            ],
             "apps": [],
-            "services": [],
-            "root_services": [],
+            "execute": false,
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [
-              {
-                "id": "adb-wifi",
-                "name": "ADB over Wi-Fi",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              }
-            ],
             "root": [
               "tweak adb-wifi (through Tweaks)"
             ],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": true,
-            "execute": false
+            "tweaks": [
+              {
+                "id": "adb-wifi",
+                "kind": "oneshot",
+                "name": "ADB over Wi-Fi",
+                "retired": false,
+                "risk": "system"
+              }
+            ],
+            "types": [
+              "application"
+            ]
           }
         }
       ]
@@ -302,52 +302,52 @@
           ],
           "notes": "Works with the new Tweaks (cabinwright.tweaks).",
           "review": {
-            "types": [
-              "application"
-            ],
             "apps": [],
-            "services": [],
-            "root_services": [],
+            "execute": false,
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [
-              {
-                "id": "aa-reconnect",
-                "name": "Reconnect wireless Android Auto",
-                "kind": "service",
-                "risk": "normal",
-                "retired": false
-              },
-              {
-                "id": "adb-tcp-hotspot",
-                "name": "ADB TCP and wireless projection together",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              },
-              {
-                "id": "cluster-directions",
-                "name": "Navigation directions in the instrument cluster",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              },
-              {
-                "id": "wireless-projection",
-                "name": "Wireless Android Auto and CarPlay",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              }
-            ],
             "root": [
               "tweak aa-reconnect (through Tweaks)",
               "tweak adb-tcp-hotspot (through Tweaks)",
               "tweak cluster-directions (through Tweaks)",
               "tweak wireless-projection (through Tweaks)"
             ],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": true,
-            "execute": false
+            "tweaks": [
+              {
+                "id": "aa-reconnect",
+                "kind": "service",
+                "name": "Reconnect wireless Android Auto",
+                "retired": false,
+                "risk": "normal"
+              },
+              {
+                "id": "adb-tcp-hotspot",
+                "kind": "oneshot",
+                "name": "ADB TCP and wireless projection together",
+                "retired": false,
+                "risk": "system"
+              },
+              {
+                "id": "cluster-directions",
+                "kind": "oneshot",
+                "name": "Navigation directions in the instrument cluster",
+                "retired": false,
+                "risk": "system"
+              },
+              {
+                "id": "wireless-projection",
+                "kind": "oneshot",
+                "name": "Wireless Android Auto and CarPlay",
+                "retired": false,
+                "risk": "system"
+              }
+            ],
+            "types": [
+              "application"
+            ]
           }
         },
         {
@@ -363,52 +363,52 @@
           ],
           "notes": "Takes over the switch of the retired Android Auto fix in Tweaks.",
           "review": {
-            "types": [
-              "application"
-            ],
             "apps": [],
-            "services": [],
-            "root_services": [],
+            "execute": false,
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [
-              {
-                "id": "aa-reconnect",
-                "name": "Reconnect wireless Android Auto",
-                "kind": "service",
-                "risk": "normal",
-                "retired": false
-              },
-              {
-                "id": "adb-tcp-hotspot",
-                "name": "ADB TCP and wireless projection together",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              },
-              {
-                "id": "cluster-directions",
-                "name": "Navigation directions in the instrument cluster",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              },
-              {
-                "id": "wireless-projection",
-                "name": "Wireless Android Auto and CarPlay",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              }
-            ],
             "root": [
               "tweak aa-reconnect (through Tweaks)",
               "tweak adb-tcp-hotspot (through Tweaks)",
               "tweak cluster-directions (through Tweaks)",
               "tweak wireless-projection (through Tweaks)"
             ],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": true,
-            "execute": false
+            "tweaks": [
+              {
+                "id": "aa-reconnect",
+                "kind": "service",
+                "name": "Reconnect wireless Android Auto",
+                "retired": false,
+                "risk": "normal"
+              },
+              {
+                "id": "adb-tcp-hotspot",
+                "kind": "oneshot",
+                "name": "ADB TCP and wireless projection together",
+                "retired": false,
+                "risk": "system"
+              },
+              {
+                "id": "cluster-directions",
+                "kind": "oneshot",
+                "name": "Navigation directions in the instrument cluster",
+                "retired": false,
+                "risk": "system"
+              },
+              {
+                "id": "wireless-projection",
+                "kind": "oneshot",
+                "name": "Wireless Android Auto and CarPlay",
+                "retired": false,
+                "risk": "system"
+              }
+            ],
+            "types": [
+              "application"
+            ]
           }
         },
         {
@@ -424,52 +424,52 @@
           ],
           "notes": "First release. Replaces HMG Leafia Plus's wireless projection package.",
           "review": {
-            "types": [
-              "application"
-            ],
             "apps": [],
-            "services": [],
-            "root_services": [],
+            "execute": false,
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [
-              {
-                "id": "aa-reconnect",
-                "name": "Reconnect wireless Android Auto",
-                "kind": "service",
-                "risk": "normal",
-                "retired": false
-              },
-              {
-                "id": "adb-tcp-hotspot",
-                "name": "ADB TCP and wireless projection together",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              },
-              {
-                "id": "cluster-directions",
-                "name": "Navigation directions in the instrument cluster",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              },
-              {
-                "id": "wireless-projection",
-                "name": "Wireless Android Auto and CarPlay",
-                "kind": "oneshot",
-                "risk": "system",
-                "retired": false
-              }
-            ],
             "root": [
               "tweak aa-reconnect (through Tweaks)",
               "tweak adb-tcp-hotspot (through Tweaks)",
               "tweak cluster-directions (through Tweaks)",
               "tweak wireless-projection (through Tweaks)"
             ],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": true,
-            "execute": false
+            "tweaks": [
+              {
+                "id": "aa-reconnect",
+                "kind": "service",
+                "name": "Reconnect wireless Android Auto",
+                "retired": false,
+                "risk": "normal"
+              },
+              {
+                "id": "adb-tcp-hotspot",
+                "kind": "oneshot",
+                "name": "ADB TCP and wireless projection together",
+                "retired": false,
+                "risk": "system"
+              },
+              {
+                "id": "cluster-directions",
+                "kind": "oneshot",
+                "name": "Navigation directions in the instrument cluster",
+                "retired": false,
+                "risk": "system"
+              },
+              {
+                "id": "wireless-projection",
+                "kind": "oneshot",
+                "name": "Wireless Android Auto and CarPlay",
+                "retired": false,
+                "risk": "system"
+              }
+            ],
+            "types": [
+              "application"
+            ]
           }
         }
       ]
