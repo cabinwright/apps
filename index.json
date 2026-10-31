@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1002,
-  "generated": "2026-10-31T16:03:46Z",
-  "expires": "2027-01-29T16:03:46Z",
+  "sequence": 1003,
+  "generated": "2026-10-31T16:40:59Z",
+  "expires": "2027-01-29T16:40:59Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -31,28 +31,28 @@
           "capabilities": {},
           "notes": "First release.",
           "review": {
-            "tier": "app",
-            "types": [
-              "application"
-            ],
-            "files": [
-              "NEMESIS.data",
-              "edit-menu.apk"
-            ],
             "apps": [
               {
                 "package": "app.cabinwright.menu",
                 "version_code": 1
               }
             ],
-            "services": [],
-            "root_services": [],
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "edit-menu.apk"
+            ],
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [],
             "root": [],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": false,
-            "execute": false
+            "tier": "app",
+            "tweaks": [],
+            "types": [
+              "application"
+            ]
           }
         }
       ]
@@ -83,41 +83,41 @@
           "capabilities": {},
           "notes": "First release.",
           "review": {
-            "tier": "system",
-            "types": [
-              "application",
-              "service"
-            ],
-            "files": [
-              "NEMESIS.data",
-              "app/store.apk",
-              "svc/cabinwrightd.jar",
-              "svc/cabinwrightd.sh"
-            ],
             "apps": [
               {
                 "package": "app.cabinwright.store",
                 "version_code": 1
               }
             ],
-            "services": [
-              {
-                "name": "cabinwrightd",
-                "uid": "root",
-                "mode": "restart"
-              }
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "app/store.apk",
+              "svc/cabinwrightd.jar",
+              "svc/cabinwrightd.sh"
+            ],
+            "hooks": [],
+            "root": [
+              "service cabinwrightd"
             ],
             "root_services": [
               "cabinwrightd"
             ],
-            "hooks": [],
-            "sh_entries": [],
-            "tweaks": [],
-            "root": [
-              "service cabinwrightd"
+            "services": [
+              {
+                "mode": "restart",
+                "name": "cabinwrightd",
+                "uid": "root"
+              }
             ],
+            "sh_entries": [],
             "system_writes": false,
-            "execute": false
+            "tier": "system",
+            "tweaks": [],
+            "types": [
+              "application",
+              "service"
+            ]
           }
         }
       ]
@@ -150,10 +150,13 @@
           },
           "notes": "First release.",
           "review": {
-            "tier": "tweaks",
-            "types": [
-              "application"
+            "apps": [
+              {
+                "package": "app.cabinwright.tweaks",
+                "version_code": 1
+              }
             ],
+            "execute": false,
             "files": [
               "NEMESIS.data",
               "lib/tweakpatch.jar",
@@ -169,28 +172,26 @@
               "tweaks/skip-consent/systemui.lpd",
               "tweaks/skip-consent/tweak.conf"
             ],
-            "apps": [
-              {
-                "package": "app.cabinwright.tweaks",
-                "version_code": 1
-              }
-            ],
-            "services": [],
-            "root_services": [],
             "hooks": [],
+            "root": [],
+            "root_services": [],
+            "services": [],
             "sh_entries": [],
+            "system_writes": true,
+            "tier": "tweaks",
             "tweaks": [
               {
-                "id": "auto-dst",
-                "name": "Automatic daylight saving time",
-                "summary": "Changes the clock for daylight saving time",
-                "description": "Moves the clock forward in March and back in November, so you never have to change it by hand.",
-                "kind": "service",
+                "changes": "settings",
+                "conflicts": [],
                 "default": "on",
+                "description": "Moves the clock forward in March and back in November, so you never have to change it by hand.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "auto-dst",
+                "kind": "service",
+                "name": "Automatic daylight saving time",
                 "needs": [
                   {
                     "need": "binder:com.hkmc.micom.time 3,4",
@@ -201,20 +202,20 @@
                     "reason": "Keep the \"Daylight saving time\" switch in the clock settings in step"
                   }
                 ],
-                "changes": "settings",
-                "disable": true
+                "summary": "Changes the clock for daylight saving time"
               },
               {
-                "id": "skip-consent",
-                "name": "Skip start-up screen",
-                "summary": "Goes straight to the home screen when you start the car",
-                "description": "Skips the screen you have to confirm every time you start the car. Takes effect after the head unit restarts, and turning it off brings the screen back.",
-                "kind": "oneshot",
+                "changes": "files",
+                "conflicts": [],
                 "default": "off",
+                "description": "Skips the screen you have to confirm every time you start the car. Takes effect after the head unit restarts, and turning it off brings the screen back.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "skip-consent",
+                "kind": "oneshot",
+                "name": "Skip start-up screen",
                 "needs": [
                   {
                     "need": "file:/system/priv-app/SystemUI.apk@512fa1835649e710d91deeb37c90433d",
@@ -225,13 +226,12 @@
                     "reason": "Replace the ready-to-run copy of that software to match"
                   }
                 ],
-                "changes": "files",
-                "disable": true
+                "summary": "Goes straight to the home screen when you start the car"
               }
             ],
-            "root": [],
-            "system_writes": true,
-            "execute": false
+            "types": [
+              "application"
+            ]
           }
         }
       ]
@@ -260,10 +260,8 @@
           "capabilities": {},
           "notes": "First release.",
           "review": {
-            "tier": "tweaks",
-            "types": [
-              "application"
-            ],
+            "apps": [],
+            "execute": false,
             "files": [
               "NEMESIS.data",
               "lib/adb-adopt.sh",
@@ -275,23 +273,26 @@
               "tweaks/adb-wifi/status.sh",
               "tweaks/adb-wifi/tweak.conf"
             ],
-            "apps": [],
-            "services": [],
-            "root_services": [],
             "hooks": [],
+            "root": [],
+            "root_services": [],
+            "services": [],
             "sh_entries": [],
+            "system_writes": true,
+            "tier": "tweaks",
             "tweaks": [
               {
-                "id": "adb-wifi",
-                "name": "ADB over Wi-Fi",
-                "summary": "Lets a computer on the car's Wi-Fi control the head unit",
-                "description": "Turns on ADB on port 5555 over the car's Wi-Fi, and shows the ADB switch in Engineering Mode so it can be turned back on from the screen. Warning: there is no password. Anyone on the car's Wi-Fi can control the head unit. Wireless Android Auto and CarPlay keep working with it on. Turning it off puts everything back; ADB then stops at the next restart.",
-                "kind": "oneshot",
+                "changes": "files",
+                "conflicts": [],
                 "default": "off",
+                "description": "Turns on ADB on port 5555 over the car's Wi-Fi, and shows the ADB switch in Engineering Mode so it can be turned back on from the screen. Warning: there is no password. Anyone on the car's Wi-Fi can control the head unit. Wireless Android Auto and CarPlay keep working with it on. Turning it off puts everything back; ADB then stops at the next restart.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "adb-wifi",
+                "kind": "oneshot",
+                "name": "ADB over Wi-Fi",
                 "needs": [
                   {
                     "need": "file:/system/bin/ifconfig@link:toolbox",
@@ -318,13 +319,12 @@
                     "reason": "Put build.prop back as it ships when this is turned off, if the TCP ADB package added lines to it"
                   }
                 ],
-                "changes": "files",
-                "disable": true
+                "summary": "Lets a computer on the car's Wi-Fi control the head unit"
               }
             ],
-            "root": [],
-            "system_writes": true,
-            "execute": false
+            "types": [
+              "application"
+            ]
           }
         }
       ]
@@ -353,10 +353,8 @@
           "capabilities": {},
           "notes": "First release.",
           "review": {
-            "tier": "tweaks",
-            "types": [
-              "application"
-            ],
+            "apps": [],
+            "execute": false,
             "files": [
               "NEMESIS.data",
               "lib/leafia/HKMC_BtSettings.menu.9096dec5.lpd",
@@ -388,23 +386,26 @@
               "tweaks/wireless-projection/status.sh",
               "tweaks/wireless-projection/tweak.conf"
             ],
-            "apps": [],
-            "services": [],
-            "root_services": [],
             "hooks": [],
+            "root": [],
+            "root_services": [],
+            "services": [],
             "sh_entries": [],
+            "system_writes": true,
+            "tier": "tweaks",
             "tweaks": [
               {
-                "id": "cluster-directions",
-                "name": "Navigation directions in the instrument cluster",
-                "summary": "Shows your phone's next turn in front of you",
-                "description": "Shows the next turn from Android Auto or Apple CarPlay navigation in the instrument cluster and head-up display, as the car's own navigation does. Takes effect after the head unit restarts, and turning it off takes the directions away again.",
-                "kind": "oneshot",
+                "changes": "files",
+                "conflicts": [],
                 "default": "on",
+                "description": "Shows the next turn from Android Auto or Apple CarPlay navigation in the instrument cluster and head-up display, as the car's own navigation does. Takes effect after the head unit restarts, and turning it off takes the directions away again.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "cluster-directions",
+                "kind": "oneshot",
+                "name": "Navigation directions in the instrument cluster",
                 "needs": [
                   {
                     "need": "file:/system/app/HKMC_GPM.apk@c155b0fb97384e645987dc1bd0f85922",
@@ -443,20 +444,20 @@
                     "reason": "Install the version of the iPhone connection service that passes directions on"
                   }
                 ],
-                "changes": "files",
-                "disable": true
+                "summary": "Shows your phone's next turn in front of you"
               },
               {
-                "id": "wireless-projection",
-                "name": "Wireless Android Auto and CarPlay",
-                "summary": "Connects your phone without a cable",
-                "description": "Lets your phone start Android Auto or Apple CarPlay over the car's own Wi-Fi, without a cable. It also restarts wireless Android Auto by itself if it gets stuck after the car's Wi-Fi hotspot has been used. Takes effect after the head unit restarts, and turning it off brings back the cable-only setup.",
-                "kind": "oneshot",
+                "changes": "files",
+                "conflicts": [],
                 "default": "on",
+                "description": "Lets your phone start Android Auto or Apple CarPlay over the car's own Wi-Fi, without a cable. It also restarts wireless Android Auto by itself if it gets stuck after the car's Wi-Fi hotspot has been used. Takes effect after the head unit restarts, and turning it off brings back the cable-only setup.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "wireless-projection",
+                "kind": "oneshot",
+                "name": "Wireless Android Auto and CarPlay",
                 "needs": [
                   {
                     "need": "file:/system/onebin/cvev_us/featurexml.cfg@2ec95448fa20221c60a145b41b516deb",
@@ -527,13 +528,12 @@
                     "reason": "Restart the Android Auto receiver when it is stuck"
                   }
                 ],
-                "changes": "files",
-                "disable": true
+                "summary": "Connects your phone without a cable"
               }
             ],
-            "root": [],
-            "system_writes": true,
-            "execute": false
+            "types": [
+              "application"
+            ]
           }
         }
       ]
