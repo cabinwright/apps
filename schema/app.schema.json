@@ -79,6 +79,8 @@
               "tweaks": {"type": "string", "minLength": 1, "maxLength": 120},
               "logs": {"type": "string", "minLength": 1, "maxLength": 120},
               "settings": {"type": "string", "minLength": 1, "maxLength": 120},
+              "vehicle": {"type": "string", "minLength": 1, "maxLength": 120},
+              "conditioning": {"type": "string", "minLength": 1, "maxLength": 120},
               "root": {"type": "string", "minLength": 1, "maxLength": 120}
             }
           },
