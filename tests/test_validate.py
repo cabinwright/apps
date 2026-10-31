@@ -33,6 +33,7 @@ class Apps(unittest.TestCase):
 
     def check(self, doc, name=None, **kw):
         kw.setdefault("fetcher", self.fetch)
+        kw.setdefault("icons_dir", False)
         return validate.check_app(write(self.dir, doc, name), **kw)
 
     def errors(self, rep):
@@ -261,6 +262,13 @@ class Apps(unittest.TestCase):
         self.assertEqual(self.errors(rep), [])
         self.assertEqual(fetch.calls, [])
 
+    def test_an_app_needs_an_icon(self):
+        icons = self.dir / "icons"
+        icons.mkdir()
+        self.assertIn("needs an icon", self.errors(self.check(entry(versions=[self.v]), icons_dir=icons))[0])
+        (icons / "test.pkg.png").write_bytes(png(64, 64))
+        self.assertEqual(self.errors(self.check(entry(versions=[self.v]), icons_dir=icons)), [])
+
     def test_icon(self):
         icons = self.dir / "icons"
         icons.mkdir()
@@ -382,9 +390,12 @@ class Cli(unittest.TestCase):
             z = system_package("1.1")
             (Path(d) / "p.zip").write_bytes(z)
             f = write(d, entry(SYSTEM, versions=[version("1.1", z)]))
+            icons = Path(d) / "icons"
+            icons.mkdir()
+            (icons / (f.stem + ".png")).write_bytes(png(64, 64))
             out = Path(d) / "c.md"
             lab = Path(d) / "labels"
-            self.assertEqual(validate.main([str(f), "--local-zip", str(Path(d) / "p.zip"),
+            self.assertEqual(validate.main([str(f), "--local-zip", str(Path(d) / "p.zip"), "--icons-dir", str(icons),
                                             "--comment", str(out), "--labels", str(lab)]), 0)
             self.assertIn("runs as root", out.read_text())
             self.assertEqual(lab.read_text(), "root\n")

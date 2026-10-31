@@ -123,11 +123,10 @@ class Build(unittest.TestCase):
 
     def test_icons(self):
         self.build(first=True)
-        # an icon that's gone from the repo is gone from Pages
+        # an app can't lose its icon
         (self.icons / "a.pkg.png").unlink()
-        idx = self.build()
-        self.assertNotIn("icon", idx["apps"][0])
-        self.assertFalse((self.pages / "icons" / "a.pkg.png").exists())
+        with self.assertRaisesRegex(validate.Fail, "needs an icon"):
+            self.build()
         # a bad icon, or one without an entry, fails the build
         (self.icons / "a.pkg.png").write_bytes(png(512, 512))
         with self.assertRaisesRegex(validate.Fail, "512x512"):

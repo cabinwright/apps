@@ -1014,6 +1014,12 @@ def icon_path(icons_dir, app_id):
     return Path(icons_dir) / ("%s.png" % app_id)
 
 
+def check_app_icon(doc, r, icons_dir, verr):
+    """Every APK shows up in All Menus and the Edit Menu, so a package with one needs an icon."""
+    if r["review"]["apps"] and icons_dir and not icon_path(icons_dir, doc["id"]).exists():
+        verr("the package installs an app, so it needs an icon: add icons/%s.png" % doc["id"])
+
+
 def check_tier(doc, v, r, verr):
     """The entry's tier and capabilities against what the zip holds."""
     tier, got = v["tier"], r["review"]["tier"]
@@ -1165,6 +1171,7 @@ def check_app(path, base=None, cache=None, local_zips=None, apps_dir=None, fetch
         ver["warnings"] += r.get("warnings", [])
         ver["errors"] += r.get("errors", [])
         check_tier(doc, v, r, verr)
+        check_app_icon(doc, r, icons_dir, verr)
         if r["nemesis"]["id"] != doc["id"]:
             verr("NEMESIS.data id is %s, not %s" % (r["nemesis"]["id"], doc["id"]))
         if r["nemesis"]["version"] != v["version"]:
