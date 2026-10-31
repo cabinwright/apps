@@ -1,0 +1,24 @@
+{
+  "id": "cabinwright.smarttube",
+  "name": "SmartTube",
+  "summary": "Watch YouTube on the car's screen while parked",
+  "description": "A YouTube app with no ads, for when you're parked. It closes when you shift out of Park. Unofficial: not made by YouTube or by SmartTube's author.",
+  "author": "hazptr",
+  "homepage": "https://github.com/cabinwright/smarttube",
+  "category": "apps",
+  "versions": [
+    {
+      "version": "32.68.7",
+      "url": "https://github.com/cabinwright/smarttube/releases/download/v32.68.7/cabinwright.smarttube-v32.68.7.zip",
+      "sha256": "2170a9acd9d8f0ba797fa457e45d6e8c911ac32d3bf8f921151dcc0dc62e8c9d",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "requires": [
+        "cabinwright.tweaks>=1.2"
+      ],
+      "tier": "app",
+      "notes": "First release, built from SmartTube 32.68. Search needs the keyboard fix in Tweaks."
+    }
+  ]
+}

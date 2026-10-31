@@ -8,6 +8,22 @@
   "category": "fixes",
   "versions": [
     {
+      "version": "1.2",
+      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.2/cabinwright.tweaks-v1.2.zip",
+      "sha256": "8f9e12107580aa5dde2569935e567fd61d8609842c3c4b20339a7423f98ded4c",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "requires": [
+        "cabinwright.store>=1.1"
+      ],
+      "tier": "tweaks",
+      "capabilities": {
+        "tweaks": "Shows and switches your tweaks"
+      },
+      "notes": "Adds the keyboard fix: stops the head unit's keyboard crashing in some apps, such as SmartTube's search."
+    },
+    {
       "version": "1.1",
       "url": "https://github.com/cabinwright/tweaks/releases/download/v1.1/cabinwright.tweaks-v1.1.zip",
       "sha256": "52ed1712ef0859c237c7d9512d8018c74cb42191de2ea8bac5ce941f6d76aacb",
