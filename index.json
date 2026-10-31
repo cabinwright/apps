@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1008,
-  "generated": "2026-10-31T18:16:01Z",
-  "expires": "2027-01-29T18:16:01Z",
+  "sequence": 1009,
+  "generated": "2026-10-31T18:20:21Z",
+  "expires": "2027-01-29T18:20:21Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -13,6 +13,10 @@
       "author": "hazptr",
       "homepage": "https://github.com/cabinwright/battery",
       "category": "tools",
+      "icon": {
+        "url": "https://cabinwright.github.io/apps/icons/cabinwright.battery.png",
+        "sha256": "3d461deb2abe37ac7f9838d578878e47fbc2725334ab0f2e71f9ed7fbf497b71"
+      },
       "versions": [
         {
           "version": "1.0",
@@ -32,28 +36,28 @@
           },
           "notes": "First release.",
           "review": {
-            "tier": "app",
-            "types": [
-              "application"
-            ],
-            "files": [
-              "NEMESIS.data",
-              "battery.apk"
-            ],
             "apps": [
               {
                 "package": "app.cabinwright.battery",
                 "version_code": 1
               }
             ],
-            "services": [],
-            "root_services": [],
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "battery.apk"
+            ],
             "hooks": [],
-            "sh_entries": [],
-            "tweaks": [],
             "root": [],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
             "system_writes": false,
-            "execute": false
+            "tier": "app",
+            "tweaks": [],
+            "types": [
+              "application"
+            ]
           }
         }
       ]
