@@ -1,0 +1,205 @@
+{
+ "errors": [],
+ "flags": [
+  {
+   "file": "lib/leafia/libev6aac.so",
+   "line": 0,
+   "rules": [
+    "binary"
+   ],
+   "text": ""
+  }
+ ],
+ "nemesis": {
+  "id": "tweaks.projection",
+  "version": "1.0"
+ },
+ "review": {
+  "apps": [],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "lib/leafia/HKMC_BtSettings.menu.9096dec5.lpd",
+   "lib/leafia/carplay-audio-formats.recipe",
+   "lib/leafia/carplay-core-wifi.recipe",
+   "lib/leafia/carplay-utils-converter.recipe",
+   "lib/leafia/com.hkmc.software.connectivity.androidauto_wireless.xml",
+   "lib/leafia/com.hkmc.software.connectivity.carplay_wireless.xml",
+   "lib/leafia/ev6/HKMC_DiPO.bridge.lpd",
+   "lib/leafia/ev6/HKMC_DiPO.tbt.lpd",
+   "lib/leafia/ev6/HKMC_GPM.tbt.lpd",
+   "lib/leafia/ev6/HKMC_Navi_ExSL.tbt.lpd",
+   "lib/leafia/ev6/Iap2ServerApp.bridge.lpd",
+   "lib/leafia/ev6/Iap2ServerApp.tbt.lpd",
+   "lib/leafia/featurexml.off.lpd",
+   "lib/leafia/featurexml.on.lpd",
+   "lib/leafia/libautoreceiver_infobank.tbt.lpd",
+   "lib/leafia/libev6aac.so",
+   "lib/projection-adopt.sh",
+   "lib/projection.sh",
+   "lib/projpatch.jar",
+   "tweaks/cluster-directions/disable.sh",
+   "tweaks/cluster-directions/enable.sh",
+   "tweaks/cluster-directions/status.sh",
+   "tweaks/cluster-directions/tweak.conf",
+   "tweaks/wireless-projection/disable.sh",
+   "tweaks/wireless-projection/enable.sh",
+   "tweaks/wireless-projection/run.sh",
+   "tweaks/wireless-projection/status.sh",
+   "tweaks/wireless-projection/tweak.conf"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": true,
+  "tier": "tweaks",
+  "tweaks": [
+   {
+    "changes": "files",
+    "conflicts": [],
+    "default": "on",
+    "description": "Shows the next turn from Android Auto or Apple CarPlay navigation in the instrument cluster and head-up display, as the car's own navigation does. Takes effect after the head unit restarts, and turning it off takes the directions away again.",
+    "disable": true,
+    "firmware": [
+     "CVEV.USA.0000.V015.012.260507"
+    ],
+    "id": "cluster-directions",
+    "kind": "oneshot",
+    "name": "Navigation directions in the instrument cluster",
+    "needs": [
+     {
+      "need": "file:/system/app/HKMC_GPM.apk@c155b0fb97384e645987dc1bd0f85922",
+      "reason": "Install the version of the Android Auto app that sends directions to the cluster"
+     },
+     {
+      "need": "file:/system/app/HKMC_GPM.odex@96cd7c27a9db19acb3900f21f57ea9f0",
+      "reason": "Install the version of the Android Auto app that sends directions to the cluster"
+     },
+     {
+      "need": "file:/system/lib/libautoreceiver_infobank.so@48ee793af8b86052503b8c952b034731",
+      "reason": "Install the version of the Android Auto receiver that passes directions on"
+     },
+     {
+      "need": "file:/system/app/HKMC_Navi_ExSL.apk@19559e742b1d21550aa8f0324e8e6d36",
+      "reason": "Install the version of the cluster's navigation link that shows phone directions"
+     },
+     {
+      "need": "file:/system/app/HKMC_Navi_ExSL.odex@9cf41f78ce312b3762b354714d12eec3",
+      "reason": "Install the version of the cluster's navigation link that shows phone directions"
+     },
+     {
+      "need": "file:/system/app/HKMC_DiPO.apk@01446fb79dc4fcfc826271ba18158fa4",
+      "reason": "Install the version of the CarPlay app that sends directions to the cluster"
+     },
+     {
+      "need": "file:/system/app/HKMC_DiPO.odex@a565e180fdb0b73d6520f28c91cdba63",
+      "reason": "Install the version of the CarPlay app that sends directions to the cluster"
+     },
+     {
+      "need": "file:/system/app/Iap2ServerApp.apk@fde208439f993986a60396e759797a01",
+      "reason": "Install the version of the iPhone connection service that passes directions on"
+     },
+     {
+      "need": "file:/system/app/Iap2ServerApp.odex@03950e4b691f846e5478a5a69818c65e",
+      "reason": "Install the version of the iPhone connection service that passes directions on"
+     }
+    ],
+    "summary": "Shows your phone's next turn in front of you"
+   },
+   {
+    "changes": "files",
+    "conflicts": [],
+    "default": "on",
+    "description": "Lets your phone start Android Auto or Apple CarPlay over the car's own Wi-Fi, without a cable. It also restarts wireless Android Auto by itself if it gets stuck after the car's Wi-Fi hotspot has been used. Takes effect after the head unit restarts, and turning it off brings back the cable-only setup.",
+    "disable": true,
+    "firmware": [
+     "CVEV.USA.0000.V015.012.260507"
+    ],
+    "id": "wireless-projection",
+    "kind": "oneshot",
+    "name": "Wireless Android Auto and CarPlay",
+    "needs": [
+     {
+      "need": "file:/system/onebin/cvev_us/featurexml.cfg@2ec95448fa20221c60a145b41b516deb",
+      "reason": "Turn on the head unit's wireless Android Auto and CarPlay features"
+     },
+     {
+      "need": "file:/system/etc/permissions/com.hkmc.software.connectivity.androidauto_wireless.xml@absent",
+      "reason": "Add the file that tells apps wireless Android Auto is available"
+     },
+     {
+      "need": "file:/system/etc/permissions/com.hkmc.software.connectivity.carplay_wireless.xml@absent",
+      "reason": "Add the file that tells apps wireless CarPlay is available"
+     },
+     {
+      "need": "file:/system/lib/libCarPlayCore.so@d3a47296437df56fb1ffc7ac3dfca4cb",
+      "reason": "Let CarPlay start over Wi-Fi"
+     },
+     {
+      "need": "file:/system/lib/libCarPlayAudio.so@fca4c75b1ae39a88b83912f083ce7dda",
+      "reason": "Let CarPlay play sound over Wi-Fi"
+     },
+     {
+      "need": "file:/system/lib/libCarPlayUtils.so@246865164c625a55705d5239577b7c89",
+      "reason": "Let CarPlay decode its sound over Wi-Fi"
+     },
+     {
+      "need": "file:/system/lib/libev6aac.so@absent",
+      "reason": "Add the sound converter wireless CarPlay needs"
+     },
+     {
+      "need": "file:/system/app/HKMC_DiPO.apk@01446fb79dc4fcfc826271ba18158fa4",
+      "reason": "Install the wireless version of the CarPlay app"
+     },
+     {
+      "need": "file:/system/app/HKMC_DiPO.odex@a565e180fdb0b73d6520f28c91cdba63",
+      "reason": "Install the wireless version of the CarPlay app"
+     },
+     {
+      "need": "file:/system/app/Iap2ServerApp.apk@fde208439f993986a60396e759797a01",
+      "reason": "Install the wireless version of the iPhone connection service"
+     },
+     {
+      "need": "file:/system/app/Iap2ServerApp.odex@03950e4b691f846e5478a5a69818c65e",
+      "reason": "Install the wireless version of the iPhone connection service"
+     },
+     {
+      "need": "file:/system/app/HKMC_BtSettings.apk@ac6621eee9cf05592859af95455c3429",
+      "reason": "Fix the Phone Projection menu in the Bluetooth settings"
+     },
+     {
+      "need": "file:/system/app/HKMC_BtSettings.odex@9096dec592a9959291dffa00b23e1a52",
+      "reason": "Fix the Phone Projection menu in the Bluetooth settings"
+     },
+     {
+      "need": "prop:persist.sys.iap2.wifi",
+      "reason": "Let iPhones connect over Wi-Fi"
+     },
+     {
+      "need": "prop:persist.iap2.iden.wireless",
+      "reason": "Tell iPhones that wireless CarPlay is available"
+     },
+     {
+      "need": "logs:AAProjection",
+      "reason": "Watch the Android Auto receiver's messages for the moment it gets stuck"
+     },
+     {
+      "need": "kill:com.google.android.projection.sink",
+      "reason": "Restart the Android Auto receiver when it is stuck"
+     }
+    ],
+    "summary": "Connects your phone without a cable"
+   }
+  ],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "a2508935d58bef2b3499c46675655e31e6e0aa88d5572df3f3c23cb8d8ed9187",
+ "size": 776060,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}

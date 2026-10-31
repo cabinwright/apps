@@ -1,0 +1,97 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "cabinwright.tweaks",
+  "version": "1.0"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "app.cabinwright.tweaks",
+    "version_code": 1
+   }
+  ],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "lib/tweakpatch.jar",
+   "tweaks.apk",
+   "tweaks/auto-dst/disable.sh",
+   "tweaks/auto-dst/run.sh",
+   "tweaks/auto-dst/status.sh",
+   "tweaks/auto-dst/tweak.conf",
+   "tweaks/skip-consent/common.sh",
+   "tweaks/skip-consent/disable.sh",
+   "tweaks/skip-consent/enable.sh",
+   "tweaks/skip-consent/status.sh",
+   "tweaks/skip-consent/systemui.lpd",
+   "tweaks/skip-consent/tweak.conf"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": true,
+  "tier": "tweaks",
+  "tweaks": [
+   {
+    "changes": "settings",
+    "conflicts": [],
+    "default": "on",
+    "description": "Moves the clock forward in March and back in November, so you never have to change it by hand.",
+    "disable": true,
+    "firmware": [
+     "CVEV.USA.0000.V015.012.260507"
+    ],
+    "id": "auto-dst",
+    "kind": "service",
+    "name": "Automatic daylight saving time",
+    "needs": [
+     {
+      "need": "binder:com.hkmc.micom.time 3,4",
+      "reason": "Read and set daylight saving time through the head unit's clock service"
+     },
+     {
+      "need": "setting:system/summer_time",
+      "reason": "Keep the \"Daylight saving time\" switch in the clock settings in step"
+     }
+    ],
+    "summary": "Changes the clock for daylight saving time"
+   },
+   {
+    "changes": "files",
+    "conflicts": [],
+    "default": "off",
+    "description": "Skips the screen you have to confirm every time you start the car. Takes effect after the head unit restarts, and turning it off brings the screen back.",
+    "disable": true,
+    "firmware": [
+     "CVEV.USA.0000.V015.012.260507"
+    ],
+    "id": "skip-consent",
+    "kind": "oneshot",
+    "name": "Skip start-up screen",
+    "needs": [
+     {
+      "need": "file:/system/priv-app/SystemUI.apk@512fa1835649e710d91deeb37c90433d",
+      "reason": "Change the head unit's status bar and start-up screen software so it skips the start-up screen"
+     },
+     {
+      "need": "file:/system/priv-app/SystemUI.odex@8abb72b9715bc8e4746ac9ee3b03ab39",
+      "reason": "Replace the ready-to-run copy of that software to match"
+     }
+    ],
+    "summary": "Goes straight to the home screen when you start the car"
+   }
+  ],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "7115db804a2c6fbfe75bb60ca14b59ae69b4eeceb671ba9185430a073fb59878",
+ "size": 154872,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}

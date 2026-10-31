@@ -1,0 +1,53 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "cabinwright.store",
+  "version": "1.0"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "app.cabinwright.store",
+    "version_code": 1
+   }
+  ],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "app/store.apk",
+   "svc/cabinwrightd.jar",
+   "svc/cabinwrightd.sh"
+  ],
+  "hooks": [],
+  "root": [
+   "service cabinwrightd"
+  ],
+  "root_services": [
+   "cabinwrightd"
+  ],
+  "services": [
+   {
+    "mode": "restart",
+    "name": "cabinwrightd",
+    "uid": "root"
+   }
+  ],
+  "sh_entries": [],
+  "system_writes": false,
+  "tier": "system",
+  "tweaks": [],
+  "types": [
+   "application",
+   "service"
+  ]
+ },
+ "sha256": "c31db342a999b26a58676abe2a5f75ae1844b21c156254ac48c671a97d6dadfc",
+ "size": 147818,
+ "system_reasons": [
+  "the service cabinwrightd",
+  "files other than top-level APKs, tweaks/ and lib/: app/store.apk, svc/cabinwrightd.jar, svc/cabinwrightd.sh"
+ ],
+ "tool": 1,
+ "warnings": []
+}

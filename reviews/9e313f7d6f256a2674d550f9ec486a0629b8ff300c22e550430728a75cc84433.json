@@ -1,0 +1,37 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "cabinwright.menu",
+  "version": "1.0"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "app.cabinwright.menu",
+    "version_code": 1
+   }
+  ],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "edit-menu.apk"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": false,
+  "tier": "app",
+  "tweaks": [],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "9e313f7d6f256a2674d550f9ec486a0629b8ff300c22e550430728a75cc84433",
+ "size": 27763,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}

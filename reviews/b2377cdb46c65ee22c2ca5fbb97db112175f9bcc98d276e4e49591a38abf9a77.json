@@ -1,0 +1,80 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "tweaks.adb",
+  "version": "1.0"
+ },
+ "review": {
+  "apps": [],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "lib/adb-adopt.sh",
+   "lib/ifconfig",
+   "tweaks/adb-wifi/adb_hide.shown.xml",
+   "tweaks/adb-wifi/common.sh",
+   "tweaks/adb-wifi/disable.sh",
+   "tweaks/adb-wifi/enable.sh",
+   "tweaks/adb-wifi/status.sh",
+   "tweaks/adb-wifi/tweak.conf"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": true,
+  "tier": "tweaks",
+  "tweaks": [
+   {
+    "changes": "files",
+    "conflicts": [],
+    "default": "off",
+    "description": "Turns on ADB on port 5555 over the car's Wi-Fi, and shows the ADB switch in Engineering Mode so it can be turned back on from the screen. Warning: there is no password. Anyone on the car's Wi-Fi can control the head unit. Wireless Android Auto and CarPlay keep working with it on. Turning it off puts everything back; ADB then stops at the next restart.",
+    "disable": true,
+    "firmware": [
+     "CVEV.USA.0000.V015.012.260507"
+    ],
+    "id": "adb-wifi",
+    "kind": "oneshot",
+    "name": "ADB over Wi-Fi",
+    "needs": [
+     {
+      "need": "file:/system/bin/ifconfig@link:toolbox",
+      "reason": "Replace the network setup command with one that keeps the ADB address out of the Wi-Fi hotspot's range, so wireless Android Auto and CarPlay still connect"
+     },
+     {
+      "need": "service:set_adb_ip",
+      "reason": "Run the head unit's ADB network setup again, so that works without a restart"
+     },
+     {
+      "need": "prop:persist.service.adb.tcp.enable",
+      "reason": "Turn on the head unit's own ADB TCP switch, the one in Engineering Mode"
+     },
+     {
+      "need": "prop:persist.adb.tcp.port",
+      "reason": "Make ADB listen on port 5555"
+     },
+     {
+      "need": "file:/system/etc/permissions/com.hkmc.software.engineermode.adb_hide.xml@bb94dd63efd6d3494834e649653f795f",
+      "reason": "Show the ADB switch in Engineering Mode, so ADB can be turned back on from the screen"
+     },
+     {
+      "need": "file:/system/build.prop@30e9666d146efe83697f155574d50d30",
+      "reason": "Put build.prop back as it ships when this is turned off, if the TCP ADB package added lines to it"
+     }
+    ],
+    "summary": "Lets a computer on the car's Wi-Fi control the head unit"
+   }
+  ],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "b2377cdb46c65ee22c2ca5fbb97db112175f9bcc98d276e4e49591a38abf9a77",
+ "size": 7917,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}

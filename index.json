@@ -1,9 +1,9 @@
 {
   "format": 1,
-  "sequence": 1001,
-  "generated": "2026-10-26T12:49:52Z",
-  "expires": "2027-01-24T12:49:52Z",
-  "key_id": "kia-apps-2026a",
+  "sequence": 1002,
+  "generated": "2026-10-31T16:03:46Z",
+  "expires": "2027-01-29T16:03:46Z",
+  "key_id": "cabinwright-2026a",
   "apps": [
     {
       "id": "cabinwright.menu",
@@ -19,23 +19,30 @@
       },
       "versions": [
         {
-          "version": "1.3.1",
-          "url": "https://github.com/cabinwright/menu/releases/download/v1.3.1/cabinwright.menu-v1.3.1.zip",
-          "sha256": "6577df40f22a8a6bb13780ce62cb38896ec9a575c854ed87247010238fbbf7dc",
-          "size": 29164,
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/menu/releases/download/v1.0/cabinwright.menu-v1.0.zip",
+          "sha256": "9e313f7d6f256a2674d550f9ec486a0629b8ff300c22e550430728a75cc84433",
+          "size": 27763,
           "firmware": [
             "*"
           ],
           "requires": [],
-          "notes": "The new home of Edit Menu. Takes over your menu layout from the earlier Edit Menu.",
+          "tier": "app",
+          "capabilities": {},
+          "notes": "First release.",
           "review": {
+            "tier": "app",
             "types": [
               "application"
             ],
+            "files": [
+              "NEMESIS.data",
+              "edit-menu.apk"
+            ],
             "apps": [
               {
-                "package": "dev.cabinwright.menu",
-                "version_code": 9
+                "package": "app.cabinwright.menu",
+                "version_code": 1
               }
             ],
             "services": [],
@@ -64,41 +71,50 @@
       },
       "versions": [
         {
-          "version": "1.2.1",
-          "url": "https://github.com/cabinwright/store/releases/download/v1.2.1/cabinwright.store-v1.2.1.zip",
-          "sha256": "46dcc6d0bd0e720284ba2ab05a79a5c13abb7ba6bb3058516871b3b260779b4c",
-          "size": 87575,
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/store/releases/download/v1.0/cabinwright.store-v1.0.zip",
+          "sha256": "c31db342a999b26a58676abe2a5f75ae1844b21c156254ac48c671a97d6dadfc",
+          "size": 147818,
           "firmware": [
             "*"
           ],
           "requires": [],
-          "notes": "Now called Cabinwright. Takes over from the earlier App Store: what it installed, and its updates.",
+          "tier": "system",
+          "capabilities": {},
+          "notes": "First release.",
           "review": {
+            "tier": "system",
             "types": [
               "application",
               "service"
             ],
+            "files": [
+              "NEMESIS.data",
+              "app/store.apk",
+              "svc/cabinwrightd.jar",
+              "svc/cabinwrightd.sh"
+            ],
             "apps": [
               {
-                "package": "dev.cabinwright.store",
-                "version_code": 3
+                "package": "app.cabinwright.store",
+                "version_code": 1
               }
             ],
             "services": [
               {
-                "name": "helper",
+                "name": "cabinwrightd",
                 "uid": "root",
                 "mode": "restart"
               }
             ],
             "root_services": [
-              "helper"
+              "cabinwrightd"
             ],
             "hooks": [],
             "sh_entries": [],
             "tweaks": [],
             "root": [
-              "service helper"
+              "service cabinwrightd"
             ],
             "system_writes": false,
             "execute": false
@@ -120,75 +136,100 @@
       },
       "versions": [
         {
-          "version": "1.4.1",
-          "url": "https://github.com/cabinwright/tweaks/releases/download/v1.4.1/cabinwright.tweaks-v1.4.1.zip",
-          "sha256": "c9dac974c6a075b870c11c2c2b55dacdea26b8f883676355924976fe58b3f7ce",
-          "size": 171330,
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/tweaks/releases/download/v1.0/cabinwright.tweaks-v1.0.zip",
+          "sha256": "7115db804a2c6fbfe75bb60ca14b59ae69b4eeceb671ba9185430a073fb59878",
+          "size": 154872,
           "firmware": [
             "CVEV.USA.0000.V015.012.260507"
           ],
           "requires": [],
-          "notes": "The new home of Tweaks. Takes over every switch from the earlier Tweaks without turning anything off.",
+          "tier": "tweaks",
+          "capabilities": {
+            "tweaks": "Shows and switches your tweaks"
+          },
+          "notes": "First release.",
           "review": {
+            "tier": "tweaks",
             "types": [
-              "application",
-              "service"
+              "application"
+            ],
+            "files": [
+              "NEMESIS.data",
+              "lib/tweakpatch.jar",
+              "tweaks.apk",
+              "tweaks/auto-dst/disable.sh",
+              "tweaks/auto-dst/run.sh",
+              "tweaks/auto-dst/status.sh",
+              "tweaks/auto-dst/tweak.conf",
+              "tweaks/skip-consent/common.sh",
+              "tweaks/skip-consent/disable.sh",
+              "tweaks/skip-consent/enable.sh",
+              "tweaks/skip-consent/status.sh",
+              "tweaks/skip-consent/systemui.lpd",
+              "tweaks/skip-consent/tweak.conf"
             ],
             "apps": [
               {
-                "package": "dev.cabinwright.tweaks",
-                "version_code": 6
+                "package": "app.cabinwright.tweaks",
+                "version_code": 1
               }
             ],
-            "services": [
-              {
-                "name": "tweaksd",
-                "uid": "root",
-                "mode": "restart"
-              }
-            ],
-            "root_services": [
-              "tweaksd"
-            ],
+            "services": [],
+            "root_services": [],
             "hooks": [],
             "sh_entries": [],
             "tweaks": [
               {
-                "id": "aa-recover",
-                "name": "Fix wireless Android Auto not connecting",
-                "kind": "service",
-                "risk": "normal",
-                "retired": true
-              },
-              {
                 "id": "auto-dst",
                 "name": "Automatic daylight saving time",
+                "summary": "Changes the clock for daylight saving time",
+                "description": "Moves the clock forward in March and back in November, so you never have to change it by hand.",
                 "kind": "service",
-                "risk": "normal",
-                "retired": false
-              },
-              {
-                "id": "eth0-guard",
-                "name": "Wireless projection with ADB TCP",
-                "kind": "service",
-                "risk": "normal",
-                "retired": true
+                "default": "on",
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "conflicts": [],
+                "needs": [
+                  {
+                    "need": "binder:com.hkmc.micom.time 3,4",
+                    "reason": "Read and set daylight saving time through the head unit's clock service"
+                  },
+                  {
+                    "need": "setting:system/summer_time",
+                    "reason": "Keep the \"Daylight saving time\" switch in the clock settings in step"
+                  }
+                ],
+                "changes": "settings",
+                "disable": true
               },
               {
                 "id": "skip-consent",
                 "name": "Skip start-up screen",
+                "summary": "Goes straight to the home screen when you start the car",
+                "description": "Skips the screen you have to confirm every time you start the car. Takes effect after the head unit restarts, and turning it off brings the screen back.",
                 "kind": "oneshot",
-                "risk": "system",
-                "retired": false
+                "default": "off",
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "conflicts": [],
+                "needs": [
+                  {
+                    "need": "file:/system/priv-app/SystemUI.apk@512fa1835649e710d91deeb37c90433d",
+                    "reason": "Change the head unit's status bar and start-up screen software so it skips the start-up screen"
+                  },
+                  {
+                    "need": "file:/system/priv-app/SystemUI.odex@8abb72b9715bc8e4746ac9ee3b03ab39",
+                    "reason": "Replace the ready-to-run copy of that software to match"
+                  }
+                ],
+                "changes": "files",
+                "disable": true
               }
             ],
-            "root": [
-              "service tweaksd",
-              "tweak aa-recover (through Tweaks)",
-              "tweak auto-dst (through Tweaks)",
-              "tweak eth0-guard (through Tweaks)",
-              "tweak skip-consent (through Tweaks)"
-            ],
+            "root": [],
             "system_writes": true,
             "execute": false
           }
@@ -205,77 +246,85 @@
       "category": "tools",
       "versions": [
         {
-          "version": "1.1",
-          "url": "https://github.com/cabinwright/tweaks-adb/releases/download/v1.1/tweaks.adb-v1.1.zip",
-          "sha256": "26615db1b6d0e3e712255c904fb78033bbd6a12ac875e744257c6e845a810bc0",
-          "size": 6694,
-          "firmware": [
-            "CVEV.USA.0000.V015.012.260507"
-          ],
-          "requires": [
-            "cabinwright.tweaks>=1.4"
-          ],
-          "notes": "Works with the new Tweaks (cabinwright.tweaks).",
-          "review": {
-            "apps": [],
-            "execute": false,
-            "hooks": [],
-            "root": [
-              "tweak adb-wifi (through Tweaks)"
-            ],
-            "root_services": [],
-            "services": [],
-            "sh_entries": [],
-            "system_writes": true,
-            "tweaks": [
-              {
-                "id": "adb-wifi",
-                "kind": "oneshot",
-                "name": "ADB over Wi-Fi",
-                "retired": false,
-                "risk": "system"
-              }
-            ],
-            "types": [
-              "application"
-            ]
-          }
-        },
-        {
           "version": "1.0",
           "url": "https://github.com/cabinwright/tweaks-adb/releases/download/v1.0/tweaks.adb-v1.0.zip",
-          "sha256": "35099777c33b12673a687a09547adccc0b66b0e19d674697a8b9bbda245401cd",
-          "size": 6698,
+          "sha256": "b2377cdb46c65ee22c2ca5fbb97db112175f9bcc98d276e4e49591a38abf9a77",
+          "size": 7917,
           "firmware": [
             "CVEV.USA.0000.V015.012.260507"
           ],
           "requires": [
-            "cabinwright.tweaks>=1.4"
+            "cabinwright.tweaks>=1.0"
           ],
-          "notes": "First release. Replaces the TCP ADB package.",
+          "tier": "tweaks",
+          "capabilities": {},
+          "notes": "First release.",
           "review": {
-            "apps": [],
-            "execute": false,
-            "hooks": [],
-            "root": [
-              "tweak adb-wifi (through Tweaks)"
+            "tier": "tweaks",
+            "types": [
+              "application"
             ],
-            "root_services": [],
+            "files": [
+              "NEMESIS.data",
+              "lib/adb-adopt.sh",
+              "lib/ifconfig",
+              "tweaks/adb-wifi/adb_hide.shown.xml",
+              "tweaks/adb-wifi/common.sh",
+              "tweaks/adb-wifi/disable.sh",
+              "tweaks/adb-wifi/enable.sh",
+              "tweaks/adb-wifi/status.sh",
+              "tweaks/adb-wifi/tweak.conf"
+            ],
+            "apps": [],
             "services": [],
+            "root_services": [],
+            "hooks": [],
             "sh_entries": [],
-            "system_writes": true,
             "tweaks": [
               {
                 "id": "adb-wifi",
-                "kind": "oneshot",
                 "name": "ADB over Wi-Fi",
-                "retired": false,
-                "risk": "system"
+                "summary": "Lets a computer on the car's Wi-Fi control the head unit",
+                "description": "Turns on ADB on port 5555 over the car's Wi-Fi, and shows the ADB switch in Engineering Mode so it can be turned back on from the screen. Warning: there is no password. Anyone on the car's Wi-Fi can control the head unit. Wireless Android Auto and CarPlay keep working with it on. Turning it off puts everything back; ADB then stops at the next restart.",
+                "kind": "oneshot",
+                "default": "off",
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "conflicts": [],
+                "needs": [
+                  {
+                    "need": "file:/system/bin/ifconfig@link:toolbox",
+                    "reason": "Replace the network setup command with one that keeps the ADB address out of the Wi-Fi hotspot's range, so wireless Android Auto and CarPlay still connect"
+                  },
+                  {
+                    "need": "service:set_adb_ip",
+                    "reason": "Run the head unit's ADB network setup again, so that works without a restart"
+                  },
+                  {
+                    "need": "prop:persist.service.adb.tcp.enable",
+                    "reason": "Turn on the head unit's own ADB TCP switch, the one in Engineering Mode"
+                  },
+                  {
+                    "need": "prop:persist.adb.tcp.port",
+                    "reason": "Make ADB listen on port 5555"
+                  },
+                  {
+                    "need": "file:/system/etc/permissions/com.hkmc.software.engineermode.adb_hide.xml@bb94dd63efd6d3494834e649653f795f",
+                    "reason": "Show the ADB switch in Engineering Mode, so ADB can be turned back on from the screen"
+                  },
+                  {
+                    "need": "file:/system/build.prop@30e9666d146efe83697f155574d50d30",
+                    "reason": "Put build.prop back as it ships when this is turned off, if the TCP ADB package added lines to it"
+                  }
+                ],
+                "changes": "files",
+                "disable": true
               }
             ],
-            "types": [
-              "application"
-            ]
+            "root": [],
+            "system_writes": true,
+            "execute": false
           }
         }
       ]
@@ -290,186 +339,201 @@
       "category": "projection",
       "versions": [
         {
-          "version": "1.2",
-          "url": "https://github.com/cabinwright/tweaks-projection/releases/download/v1.2/tweaks.projection-v1.2.zip",
-          "sha256": "3d851da6d527806e4d3e0ba14bdc5dcc571c301044e25621377f72986e1307b8",
-          "size": 780084,
-          "firmware": [
-            "CVEV.USA.0000.V015.012.260507"
-          ],
-          "requires": [
-            "cabinwright.tweaks>=1.4"
-          ],
-          "notes": "Works with the new Tweaks (cabinwright.tweaks).",
-          "review": {
-            "apps": [],
-            "execute": false,
-            "hooks": [],
-            "root": [
-              "tweak aa-reconnect (through Tweaks)",
-              "tweak adb-tcp-hotspot (through Tweaks)",
-              "tweak cluster-directions (through Tweaks)",
-              "tweak wireless-projection (through Tweaks)"
-            ],
-            "root_services": [],
-            "services": [],
-            "sh_entries": [],
-            "system_writes": true,
-            "tweaks": [
-              {
-                "id": "aa-reconnect",
-                "kind": "service",
-                "name": "Reconnect wireless Android Auto",
-                "retired": false,
-                "risk": "normal"
-              },
-              {
-                "id": "adb-tcp-hotspot",
-                "kind": "oneshot",
-                "name": "ADB TCP and wireless projection together",
-                "retired": false,
-                "risk": "system"
-              },
-              {
-                "id": "cluster-directions",
-                "kind": "oneshot",
-                "name": "Navigation directions in the instrument cluster",
-                "retired": false,
-                "risk": "system"
-              },
-              {
-                "id": "wireless-projection",
-                "kind": "oneshot",
-                "name": "Wireless Android Auto and CarPlay",
-                "retired": false,
-                "risk": "system"
-              }
-            ],
-            "types": [
-              "application"
-            ]
-          }
-        },
-        {
-          "version": "1.1",
-          "url": "https://github.com/cabinwright/tweaks-projection/releases/download/v1.1/tweaks.projection-v1.1.zip",
-          "sha256": "3df9e7a830d7ac972c9e25d685873828d5b5549d9ff61ef7d7afaf190c980848",
-          "size": 780068,
-          "firmware": [
-            "CVEV.USA.0000.V015.012.260507"
-          ],
-          "requires": [
-            "cabinwright.tweaks>=1.4"
-          ],
-          "notes": "Takes over the switch of the retired Android Auto fix in Tweaks.",
-          "review": {
-            "apps": [],
-            "execute": false,
-            "hooks": [],
-            "root": [
-              "tweak aa-reconnect (through Tweaks)",
-              "tweak adb-tcp-hotspot (through Tweaks)",
-              "tweak cluster-directions (through Tweaks)",
-              "tweak wireless-projection (through Tweaks)"
-            ],
-            "root_services": [],
-            "services": [],
-            "sh_entries": [],
-            "system_writes": true,
-            "tweaks": [
-              {
-                "id": "aa-reconnect",
-                "kind": "service",
-                "name": "Reconnect wireless Android Auto",
-                "retired": false,
-                "risk": "normal"
-              },
-              {
-                "id": "adb-tcp-hotspot",
-                "kind": "oneshot",
-                "name": "ADB TCP and wireless projection together",
-                "retired": false,
-                "risk": "system"
-              },
-              {
-                "id": "cluster-directions",
-                "kind": "oneshot",
-                "name": "Navigation directions in the instrument cluster",
-                "retired": false,
-                "risk": "system"
-              },
-              {
-                "id": "wireless-projection",
-                "kind": "oneshot",
-                "name": "Wireless Android Auto and CarPlay",
-                "retired": false,
-                "risk": "system"
-              }
-            ],
-            "types": [
-              "application"
-            ]
-          }
-        },
-        {
           "version": "1.0",
           "url": "https://github.com/cabinwright/tweaks-projection/releases/download/v1.0/tweaks.projection-v1.0.zip",
-          "sha256": "08e33e505e24c0cf4522ad8e8a20ceae41a358584136997afb79bcccc6a38e91",
-          "size": 780054,
+          "sha256": "a2508935d58bef2b3499c46675655e31e6e0aa88d5572df3f3c23cb8d8ed9187",
+          "size": 776060,
           "firmware": [
             "CVEV.USA.0000.V015.012.260507"
           ],
           "requires": [
-            "cabinwright.tweaks>=1.4"
+            "cabinwright.tweaks>=1.0"
           ],
-          "notes": "First release. Replaces HMG Leafia Plus's wireless projection package.",
+          "tier": "tweaks",
+          "capabilities": {},
+          "notes": "First release.",
           "review": {
-            "apps": [],
-            "execute": false,
-            "hooks": [],
-            "root": [
-              "tweak aa-reconnect (through Tweaks)",
-              "tweak adb-tcp-hotspot (through Tweaks)",
-              "tweak cluster-directions (through Tweaks)",
-              "tweak wireless-projection (through Tweaks)"
+            "tier": "tweaks",
+            "types": [
+              "application"
             ],
-            "root_services": [],
+            "files": [
+              "NEMESIS.data",
+              "lib/leafia/HKMC_BtSettings.menu.9096dec5.lpd",
+              "lib/leafia/carplay-audio-formats.recipe",
+              "lib/leafia/carplay-core-wifi.recipe",
+              "lib/leafia/carplay-utils-converter.recipe",
+              "lib/leafia/com.hkmc.software.connectivity.androidauto_wireless.xml",
+              "lib/leafia/com.hkmc.software.connectivity.carplay_wireless.xml",
+              "lib/leafia/ev6/HKMC_DiPO.bridge.lpd",
+              "lib/leafia/ev6/HKMC_DiPO.tbt.lpd",
+              "lib/leafia/ev6/HKMC_GPM.tbt.lpd",
+              "lib/leafia/ev6/HKMC_Navi_ExSL.tbt.lpd",
+              "lib/leafia/ev6/Iap2ServerApp.bridge.lpd",
+              "lib/leafia/ev6/Iap2ServerApp.tbt.lpd",
+              "lib/leafia/featurexml.off.lpd",
+              "lib/leafia/featurexml.on.lpd",
+              "lib/leafia/libautoreceiver_infobank.tbt.lpd",
+              "lib/leafia/libev6aac.so",
+              "lib/projection-adopt.sh",
+              "lib/projection.sh",
+              "lib/projpatch.jar",
+              "tweaks/cluster-directions/disable.sh",
+              "tweaks/cluster-directions/enable.sh",
+              "tweaks/cluster-directions/status.sh",
+              "tweaks/cluster-directions/tweak.conf",
+              "tweaks/wireless-projection/disable.sh",
+              "tweaks/wireless-projection/enable.sh",
+              "tweaks/wireless-projection/run.sh",
+              "tweaks/wireless-projection/status.sh",
+              "tweaks/wireless-projection/tweak.conf"
+            ],
+            "apps": [],
             "services": [],
+            "root_services": [],
+            "hooks": [],
             "sh_entries": [],
-            "system_writes": true,
             "tweaks": [
               {
-                "id": "aa-reconnect",
-                "kind": "service",
-                "name": "Reconnect wireless Android Auto",
-                "retired": false,
-                "risk": "normal"
-              },
-              {
-                "id": "adb-tcp-hotspot",
-                "kind": "oneshot",
-                "name": "ADB TCP and wireless projection together",
-                "retired": false,
-                "risk": "system"
-              },
-              {
                 "id": "cluster-directions",
-                "kind": "oneshot",
                 "name": "Navigation directions in the instrument cluster",
-                "retired": false,
-                "risk": "system"
+                "summary": "Shows your phone's next turn in front of you",
+                "description": "Shows the next turn from Android Auto or Apple CarPlay navigation in the instrument cluster and head-up display, as the car's own navigation does. Takes effect after the head unit restarts, and turning it off takes the directions away again.",
+                "kind": "oneshot",
+                "default": "on",
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "conflicts": [],
+                "needs": [
+                  {
+                    "need": "file:/system/app/HKMC_GPM.apk@c155b0fb97384e645987dc1bd0f85922",
+                    "reason": "Install the version of the Android Auto app that sends directions to the cluster"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_GPM.odex@96cd7c27a9db19acb3900f21f57ea9f0",
+                    "reason": "Install the version of the Android Auto app that sends directions to the cluster"
+                  },
+                  {
+                    "need": "file:/system/lib/libautoreceiver_infobank.so@48ee793af8b86052503b8c952b034731",
+                    "reason": "Install the version of the Android Auto receiver that passes directions on"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_Navi_ExSL.apk@19559e742b1d21550aa8f0324e8e6d36",
+                    "reason": "Install the version of the cluster's navigation link that shows phone directions"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_Navi_ExSL.odex@9cf41f78ce312b3762b354714d12eec3",
+                    "reason": "Install the version of the cluster's navigation link that shows phone directions"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_DiPO.apk@01446fb79dc4fcfc826271ba18158fa4",
+                    "reason": "Install the version of the CarPlay app that sends directions to the cluster"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_DiPO.odex@a565e180fdb0b73d6520f28c91cdba63",
+                    "reason": "Install the version of the CarPlay app that sends directions to the cluster"
+                  },
+                  {
+                    "need": "file:/system/app/Iap2ServerApp.apk@fde208439f993986a60396e759797a01",
+                    "reason": "Install the version of the iPhone connection service that passes directions on"
+                  },
+                  {
+                    "need": "file:/system/app/Iap2ServerApp.odex@03950e4b691f846e5478a5a69818c65e",
+                    "reason": "Install the version of the iPhone connection service that passes directions on"
+                  }
+                ],
+                "changes": "files",
+                "disable": true
               },
               {
                 "id": "wireless-projection",
-                "kind": "oneshot",
                 "name": "Wireless Android Auto and CarPlay",
-                "retired": false,
-                "risk": "system"
+                "summary": "Connects your phone without a cable",
+                "description": "Lets your phone start Android Auto or Apple CarPlay over the car's own Wi-Fi, without a cable. It also restarts wireless Android Auto by itself if it gets stuck after the car's Wi-Fi hotspot has been used. Takes effect after the head unit restarts, and turning it off brings back the cable-only setup.",
+                "kind": "oneshot",
+                "default": "on",
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "conflicts": [],
+                "needs": [
+                  {
+                    "need": "file:/system/onebin/cvev_us/featurexml.cfg@2ec95448fa20221c60a145b41b516deb",
+                    "reason": "Turn on the head unit's wireless Android Auto and CarPlay features"
+                  },
+                  {
+                    "need": "file:/system/etc/permissions/com.hkmc.software.connectivity.androidauto_wireless.xml@absent",
+                    "reason": "Add the file that tells apps wireless Android Auto is available"
+                  },
+                  {
+                    "need": "file:/system/etc/permissions/com.hkmc.software.connectivity.carplay_wireless.xml@absent",
+                    "reason": "Add the file that tells apps wireless CarPlay is available"
+                  },
+                  {
+                    "need": "file:/system/lib/libCarPlayCore.so@d3a47296437df56fb1ffc7ac3dfca4cb",
+                    "reason": "Let CarPlay start over Wi-Fi"
+                  },
+                  {
+                    "need": "file:/system/lib/libCarPlayAudio.so@fca4c75b1ae39a88b83912f083ce7dda",
+                    "reason": "Let CarPlay play sound over Wi-Fi"
+                  },
+                  {
+                    "need": "file:/system/lib/libCarPlayUtils.so@246865164c625a55705d5239577b7c89",
+                    "reason": "Let CarPlay decode its sound over Wi-Fi"
+                  },
+                  {
+                    "need": "file:/system/lib/libev6aac.so@absent",
+                    "reason": "Add the sound converter wireless CarPlay needs"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_DiPO.apk@01446fb79dc4fcfc826271ba18158fa4",
+                    "reason": "Install the wireless version of the CarPlay app"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_DiPO.odex@a565e180fdb0b73d6520f28c91cdba63",
+                    "reason": "Install the wireless version of the CarPlay app"
+                  },
+                  {
+                    "need": "file:/system/app/Iap2ServerApp.apk@fde208439f993986a60396e759797a01",
+                    "reason": "Install the wireless version of the iPhone connection service"
+                  },
+                  {
+                    "need": "file:/system/app/Iap2ServerApp.odex@03950e4b691f846e5478a5a69818c65e",
+                    "reason": "Install the wireless version of the iPhone connection service"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_BtSettings.apk@ac6621eee9cf05592859af95455c3429",
+                    "reason": "Fix the Phone Projection menu in the Bluetooth settings"
+                  },
+                  {
+                    "need": "file:/system/app/HKMC_BtSettings.odex@9096dec592a9959291dffa00b23e1a52",
+                    "reason": "Fix the Phone Projection menu in the Bluetooth settings"
+                  },
+                  {
+                    "need": "prop:persist.sys.iap2.wifi",
+                    "reason": "Let iPhones connect over Wi-Fi"
+                  },
+                  {
+                    "need": "prop:persist.iap2.iden.wireless",
+                    "reason": "Tell iPhones that wireless CarPlay is available"
+                  },
+                  {
+                    "need": "logs:AAProjection",
+                    "reason": "Watch the Android Auto receiver's messages for the moment it gets stuck"
+                  },
+                  {
+                    "need": "kill:com.google.android.projection.sink",
+                    "reason": "Restart the Android Auto receiver when it is stuck"
+                  }
+                ],
+                "changes": "files",
+                "disable": true
               }
             ],
-            "types": [
-              "application"
-            ]
+            "root": [],
+            "system_writes": true,
+            "execute": false
           }
         }
       ]
