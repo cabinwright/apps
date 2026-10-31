@@ -8,6 +8,16 @@
   "category": "tools",
   "versions": [
     {
+      "version": "1.2",
+      "url": "https://github.com/cabinwright/store/releases/download/v1.2/cabinwright.store-v1.2.zip",
+      "sha256": "46ac62eae4bc3ed6943c71fbc26313c527e29e4182bc040fa4faffea00abab66",
+      "firmware": [
+        "*"
+      ],
+      "tier": "system",
+      "notes": "Apps can now read the car's state and start battery conditioning."
+    },
+    {
       "version": "1.1",
       "url": "https://github.com/cabinwright/store/releases/download/v1.1/cabinwright.store-v1.1.zip",
       "sha256": "df96c90a2ead5364b57c6571ac9b030a26219ec17ee93f6a0d7f08e338243102",
