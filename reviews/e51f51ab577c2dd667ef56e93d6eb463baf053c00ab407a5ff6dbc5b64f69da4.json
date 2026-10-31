@@ -1,0 +1,65 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "cabinwright.battery",
+  "version": "1.2"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "app.cabinwright.battery",
+    "version_code": 3
+   }
+  ],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "battery.apk",
+   "lib/battery-log.jar",
+   "tweaks/battery-log/run.sh",
+   "tweaks/battery-log/tweak.conf"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": false,
+  "tier": "tweaks",
+  "tweaks": [
+   {
+    "changes": "settings",
+    "conflicts": [],
+    "default": "on",
+    "description": "Reads the battery's temperature once a minute while the head unit is on, for the graph in the Battery app. It stays on the head unit and isn't sent anywhere.",
+    "disable": false,
+    "firmware": [
+     "CVEV.USA.0000.V015.012.260507"
+    ],
+    "id": "battery-log",
+    "kind": "service",
+    "name": "Battery history",
+    "needs": [
+     {
+      "need": "binder:com.hkmc.micom.cluster 37,38,109",
+      "reason": "Read the battery's temperature from the car"
+     },
+     {
+      "need": "binder:com.hkmc.micom.bcm 109",
+      "reason": "See whether the battery is being conditioned"
+     }
+    ],
+    "summary": "Keeps the last six hours of battery temperature"
+   }
+  ],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "e51f51ab577c2dd667ef56e93d6eb463baf053c00ab407a5ff6dbc5b64f69da4",
+ "size": 38139,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}

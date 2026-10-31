@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1011,
-  "generated": "2026-10-31T21:25:54Z",
-  "expires": "2027-01-29T21:25:54Z",
+  "sequence": 1012,
+  "generated": "2026-10-31T21:35:45Z",
+  "expires": "2027-01-29T21:35:45Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -19,10 +19,10 @@
       },
       "versions": [
         {
-          "version": "1.1",
-          "url": "https://github.com/cabinwright/battery/releases/download/v1.1/cabinwright.battery-v1.1.zip",
-          "sha256": "344565912fdf801287f2f65093f1327a9b5698a1e348ac0811d25d4c08914e58",
-          "size": 37875,
+          "version": "1.2",
+          "url": "https://github.com/cabinwright/battery/releases/download/v1.2/cabinwright.battery-v1.2.zip",
+          "sha256": "e51f51ab577c2dd667ef56e93d6eb463baf053c00ab407a5ff6dbc5b64f69da4",
+          "size": 38139,
           "firmware": [
             "CVEV.USA.0000.V015.012.260507"
           ],
@@ -34,7 +34,7 @@
             "vehicle": "Shows your battery levels and whether the car is ready",
             "conditioning": "Starts and stops battery conditioning"
           },
-          "notes": "Adds the battery temperature and a six-hour graph.",
+          "notes": "Fixes the app showing no data.",
           "review": {
             "tier": "tweaks",
             "types": [
@@ -50,7 +50,7 @@
             "apps": [
               {
                 "package": "app.cabinwright.battery",
-                "version_code": 2
+                "version_code": 3
               }
             ],
             "services": [],
@@ -86,6 +86,76 @@
             "root": [],
             "system_writes": false,
             "execute": false
+          }
+        },
+        {
+          "version": "1.1",
+          "url": "https://github.com/cabinwright/battery/releases/download/v1.1/cabinwright.battery-v1.1.zip",
+          "sha256": "344565912fdf801287f2f65093f1327a9b5698a1e348ac0811d25d4c08914e58",
+          "size": 37875,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.store>=1.3"
+          ],
+          "tier": "tweaks",
+          "capabilities": {
+            "vehicle": "Shows your battery levels and whether the car is ready",
+            "conditioning": "Starts and stops battery conditioning"
+          },
+          "notes": "Adds the battery temperature and a six-hour graph.",
+          "review": {
+            "apps": [
+              {
+                "package": "app.cabinwright.battery",
+                "version_code": 2
+              }
+            ],
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "battery.apk",
+              "lib/battery-log.jar",
+              "tweaks/battery-log/run.sh",
+              "tweaks/battery-log/tweak.conf"
+            ],
+            "hooks": [],
+            "root": [],
+            "root_services": [],
+            "services": [],
+            "sh_entries": [],
+            "system_writes": false,
+            "tier": "tweaks",
+            "tweaks": [
+              {
+                "changes": "settings",
+                "conflicts": [],
+                "default": "on",
+                "description": "Reads the battery's temperature once a minute while the head unit is on, for the graph in the Battery app. It stays on the head unit and isn't sent anywhere.",
+                "disable": false,
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "id": "battery-log",
+                "kind": "service",
+                "name": "Battery history",
+                "needs": [
+                  {
+                    "need": "binder:com.hkmc.micom.cluster 37,38,109",
+                    "reason": "Read the battery's temperature from the car"
+                  },
+                  {
+                    "need": "binder:com.hkmc.micom.bcm 109",
+                    "reason": "See whether the battery is being conditioned"
+                  }
+                ],
+                "summary": "Keeps the last six hours of battery temperature"
+              }
+            ],
+            "types": [
+              "application"
+            ]
           }
         },
         {
@@ -264,41 +334,41 @@
           "capabilities": {},
           "notes": "Lets packages read car services that answer through a listener.",
           "review": {
-            "tier": "system",
-            "types": [
-              "application",
-              "service"
-            ],
-            "files": [
-              "NEMESIS.data",
-              "app/store.apk",
-              "svc/cabinwrightd.jar",
-              "svc/cabinwrightd.sh"
-            ],
             "apps": [
               {
                 "package": "app.cabinwright.store",
                 "version_code": 1
               }
             ],
-            "services": [
-              {
-                "name": "cabinwrightd",
-                "uid": "root",
-                "mode": "restart"
-              }
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "app/store.apk",
+              "svc/cabinwrightd.jar",
+              "svc/cabinwrightd.sh"
+            ],
+            "hooks": [],
+            "root": [
+              "service cabinwrightd"
             ],
             "root_services": [
               "cabinwrightd"
             ],
-            "hooks": [],
-            "sh_entries": [],
-            "tweaks": [],
-            "root": [
-              "service cabinwrightd"
+            "services": [
+              {
+                "mode": "restart",
+                "name": "cabinwrightd",
+                "uid": "root"
+              }
             ],
+            "sh_entries": [],
             "system_writes": false,
-            "execute": false
+            "tier": "system",
+            "tweaks": [],
+            "types": [
+              "application",
+              "service"
+            ]
           }
         },
         {
