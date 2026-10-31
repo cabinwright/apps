@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1005,
-  "generated": "2026-10-31T17:58:50Z",
-  "expires": "2027-01-29T17:58:50Z",
+  "sequence": 1006,
+  "generated": "2026-10-31T18:04:39Z",
+  "expires": "2027-01-29T18:04:39Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -70,6 +70,56 @@
         "sha256": "edb03473a7a8d47d0012fb7f94dc76b62488169a7a89b7700db183b03ccac999"
       },
       "versions": [
+        {
+          "version": "1.2",
+          "url": "https://github.com/cabinwright/store/releases/download/v1.2/cabinwright.store-v1.2.zip",
+          "sha256": "46ac62eae4bc3ed6943c71fbc26313c527e29e4182bc040fa4faffea00abab66",
+          "size": 149247,
+          "firmware": [
+            "*"
+          ],
+          "requires": [],
+          "tier": "system",
+          "capabilities": {},
+          "notes": "Apps can now read the car's state and start battery conditioning.",
+          "review": {
+            "tier": "system",
+            "types": [
+              "application",
+              "service"
+            ],
+            "files": [
+              "NEMESIS.data",
+              "app/store.apk",
+              "svc/cabinwrightd.jar",
+              "svc/cabinwrightd.sh"
+            ],
+            "apps": [
+              {
+                "package": "app.cabinwright.store",
+                "version_code": 1
+              }
+            ],
+            "services": [
+              {
+                "name": "cabinwrightd",
+                "uid": "root",
+                "mode": "restart"
+              }
+            ],
+            "root_services": [
+              "cabinwrightd"
+            ],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [],
+            "root": [
+              "service cabinwrightd"
+            ],
+            "system_writes": false,
+            "execute": false
+          }
+        },
         {
           "version": "1.1",
           "url": "https://github.com/cabinwright/store/releases/download/v1.1/cabinwright.store-v1.1.zip",
