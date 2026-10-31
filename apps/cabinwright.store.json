@@ -8,6 +8,16 @@
   "category": "tools",
   "versions": [
     {
+      "version": "1.3",
+      "url": "https://github.com/cabinwright/store/releases/download/v1.3/cabinwright.store-v1.3.zip",
+      "sha256": "113939c8e20e68c85fea13fd13c871f64b7cf974528ee0601e88060e31267df7",
+      "firmware": [
+        "*"
+      ],
+      "tier": "system",
+      "notes": "Lets packages read car services that answer through a listener."
+    },
+    {
       "version": "1.2",
       "url": "https://github.com/cabinwright/store/releases/download/v1.2/cabinwright.store-v1.2.zip",
       "sha256": "46ac62eae4bc3ed6943c71fbc26313c527e29e4182bc040fa4faffea00abab66",
