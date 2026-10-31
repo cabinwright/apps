@@ -1,0 +1,130 @@
+{
+  "format": 1,
+  "sequence": 42,
+  "generated": "2026-10-25T18:00:00Z",
+  "expires": "2027-01-23T18:00:00Z",
+  "key_id": "apps-test",
+  "apps": [
+    {
+      "id": "cabinwright.menu",
+      "name": "Edit Menu",
+      "summary": "A test",
+      "description": "",
+      "author": "someone",
+      "homepage": "",
+      "category": "tools",
+      "versions": [
+        {
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/menu/releases/download/v1.0/cabinwright.menu-v1.0.zip",
+          "sha256": "f17c04e0fef842c57c5f1d50e85980265eb02f2cb606e80c82a4fa1be41e3c98",
+          "size": 978,
+          "firmware": [
+            "*"
+          ],
+          "requires": [],
+          "tier": "app",
+          "capabilities": {
+            "tweaks": "Shows and switches your tweaks"
+          },
+          "notes": "",
+          "review": {
+            "tier": "app",
+            "types": [
+              "application"
+            ],
+            "files": [
+              "NEMESIS.data",
+              "t.apk"
+            ],
+            "apps": [
+              {
+                "package": "dev.test",
+                "version_code": 3
+              }
+            ],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [],
+            "root": [],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "tweaks.test",
+      "name": "Test tweaks",
+      "summary": "A test",
+      "description": "",
+      "author": "someone",
+      "homepage": "",
+      "category": "fixes",
+      "versions": [
+        {
+          "version": "1.0",
+          "url": "https://github.com/cabinwright/tweaks-test/releases/download/v1.0/tweaks.test-v1.0.zip",
+          "sha256": "f810616f2a0572d86c9831e003b1c9ec67633d6f329536e55cd35e13096cea22",
+          "size": 876,
+          "firmware": [
+            "CVEV.USA.0000.V015.012.260507"
+          ],
+          "requires": [
+            "cabinwright.menu>=1.0"
+          ],
+          "tier": "tweaks",
+          "capabilities": {},
+          "notes": "Caf\u00e9 \"quotes\" and a\nnewline.",
+          "review": {
+            "tier": "tweaks",
+            "types": [
+              "application"
+            ],
+            "files": [
+              "NEMESIS.data",
+              "tweaks/auto-dst/run.sh",
+              "tweaks/auto-dst/tweak.conf"
+            ],
+            "apps": [],
+            "services": [],
+            "root_services": [],
+            "hooks": [],
+            "sh_entries": [],
+            "tweaks": [
+              {
+                "id": "auto-dst",
+                "name": "Automatic daylight saving time",
+                "summary": "Changes the clock for daylight saving time",
+                "description": "Moves the clock forward in March and back in November.",
+                "kind": "service",
+                "default": "on",
+                "firmware": [
+                  "CVEV.USA.0000.V015.012.260507"
+                ],
+                "conflicts": [],
+                "needs": [
+                  {
+                    "need": "setting:system/summer_time",
+                    "reason": "Turn the head unit's own daylight-saving switch"
+                  },
+                  {
+                    "need": "binder:com.hkmc.micom.time 3,4",
+                    "reason": "Set the clock through the head unit's time service"
+                  }
+                ],
+                "changes": "settings",
+                "disable": false
+              }
+            ],
+            "root": [],
+            "system_writes": false,
+            "execute": false
+          }
+        }
+      ]
+    }
+  ]
+}

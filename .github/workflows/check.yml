@@ -1,0 +1,81 @@
+name: check
+
+# Runs on every PR with a read-only token and no secrets, so it is safe for forks. It only
+# computes the review; review-comment.yml posts it (that job has write access but never runs
+# anything from the PR).
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Review
+        id: review
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR: ${{ github.event.pull_request.number }}
+          # the owner maintains the tools and docs; everyone else may only touch apps/ and icons/
+          AUTHOR: ${{ github.event.pull_request.author_association }}
+        run: |
+          out="$RUNNER_TEMP/review"
+          mkdir -p "$out"
+          echo "$PR" > "$out/pr"
+          : > "$out/labels"
+          # the tools come from the base branch: a PR can't change how it is reviewed
+          git worktree add -q "$RUNNER_TEMP/base" "$BASE_SHA"
+          tools="$RUNNER_TEMP/base/tools"
+
+          outside=$(git diff --name-only "$BASE_SHA" HEAD | grep -Ev '^(apps/[^/]+\.json|icons/[^/]+\.png)$' || true)
+          # --no-renames: a renamed entry counts as deleted (and its new name as added)
+          apps=$(git diff --name-only --no-renames --diff-filter=AM "$BASE_SHA" HEAD -- 'apps/*.json')
+          removed=$(git diff --name-only --no-renames --diff-filter=D "$BASE_SHA" HEAD -- 'apps/*.json')
+          # a changed icon is checked with its entry (which must exist)
+          for i in $(git diff --name-only --no-renames --diff-filter=AM "$BASE_SHA" HEAD -- 'icons/*.png'); do
+            f="apps/$(basename "$i" .png).json"
+            case " $apps " in *" $f "*) ;; *) apps="$apps $f" ;; esac
+          done
+          status=0
+          if [ -n "$apps" ]; then
+            # shellcheck disable=SC2086
+            python3 "$tools/validate.py" --base "$BASE_SHA" --comment "$out/comment.md" \
+              --labels "$out/labels" $apps || status=1
+          else
+            printf '<!-- cabinwright-apps-review -->\n## Cabinwright apps review\n\nNo apps/*.json added or changed.\n' > "$out/comment.md"
+          fi
+          # entries are never deleted: cars that installed the app need it in the index to
+          # show it as retired and offer its removal
+          if [ -n "$removed" ]; then
+            printf '\n### :x: Deleted entries\n\nEntries are never deleted from the index. To retire an app, keep its file and set `"deprecated": "<why, in plain words>"` (and `"replaced_by": "<id>"` if another app takes its place); see CONTRIBUTING.md.\n\n' >> "$out/comment.md"
+            for f in $removed; do printf -- '- `%s`\n' "$f" >> "$out/comment.md"; done
+            status=1
+          fi
+          if [ -n "$outside" ] && [ "$AUTHOR" = OWNER ]; then
+            printf '\n### Files outside apps/ and icons/ (owner)\n\n' >> "$out/comment.md"
+            for f in $outside; do printf -- '- `%s`\n' "$f" >> "$out/comment.md"; done
+          elif [ -n "$outside" ]; then
+            printf '\n### :x: Files outside apps/ and icons/\n\nA PR may only change apps/<id>.json and icons/<id>.png files:\n\n' >> "$out/comment.md"
+            for f in $outside; do printf -- '- `%s`\n' "$f" >> "$out/comment.md"; done
+            status=1
+          fi
+          cat "$out/comment.md" >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: review
+          path: ${{ runner.temp }}/review/
+          retention-days: 7

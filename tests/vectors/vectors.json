@@ -1,0 +1,19 @@
+{
+  "key_id": "apps-test",
+  "public_key": "test-key.pub.pem",
+  "now": "2026-10-26T00:00:00Z",
+  "cases": [
+    {
+      "index": "index.json",
+      "sig": "index.json.sig",
+      "valid": true,
+      "sha256": "333cb2b4d029aa4d836b1fd0e3b084e4fe292502f260b159caa11b1ab3fb3c73"
+    },
+    {
+      "index": "index.tampered.json",
+      "sig": "index.json.sig",
+      "valid": false,
+      "sha256": "ee08719e109299db15400c4bc3f3c96fc4a9d8bf77edff58b6bb60a17724205c"
+    }
+  ]
+}
