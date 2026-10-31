@@ -8,6 +8,23 @@
   "category": "tools",
   "versions": [
     {
+      "version": "1.2",
+      "url": "https://github.com/cabinwright/battery/releases/download/v1.2/cabinwright.battery-v1.2.zip",
+      "sha256": "e51f51ab577c2dd667ef56e93d6eb463baf053c00ab407a5ff6dbc5b64f69da4",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "requires": [
+        "cabinwright.store>=1.3"
+      ],
+      "tier": "tweaks",
+      "capabilities": {
+        "vehicle": "Shows your battery levels and whether the car is ready",
+        "conditioning": "Starts and stops battery conditioning"
+      },
+      "notes": "Fixes the app showing no data."
+    },
+    {
       "version": "1.1",
       "url": "https://github.com/cabinwright/battery/releases/download/v1.1/cabinwright.battery-v1.1.zip",
       "sha256": "344565912fdf801287f2f65093f1327a9b5698a1e348ac0811d25d4c08914e58",
