@@ -93,7 +93,9 @@ The full schema is [schema/app.schema.json](schema/app.schema.json).
 
 ### Icon
 
-Optional: add `icons/<id>.png` in the same PR, a PNG of at most 256x256 and 64 KiB. The index
+Required for a package that installs an app, because every app appears in All Menus and the Edit
+Menu; optional otherwise. Add `icons/<id>.png` in the same PR, a PNG of at most 256x256 and 64 KiB.
+For a matching look, use the app's own night icon from the SDK's `menu_icon.py`. The index
 serves it from `https://cabinwright.github.io/apps/icons/<id>.png`.
 
 ### Before the release exists
