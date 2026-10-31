@@ -1,0 +1,28 @@
+{
+  "id": "cabinwright.battery",
+  "name": "Battery",
+  "summary": "Battery levels and manual battery conditioning",
+  "description": "See your main and 12V battery levels, and start conditioning the battery before you reach a charger, without a navigation route.",
+  "author": "hazptr",
+  "homepage": "https://github.com/cabinwright/battery",
+  "category": "tools",
+  "versions": [
+    {
+      "version": "1.0",
+      "url": "https://github.com/cabinwright/battery/releases/download/v1.0/cabinwright.battery-v1.0.zip",
+      "sha256": "bcae43da1d93bdff61add844a17c12a3a5a9a088dc110e7fa87bb5f3600ec629",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "requires": [
+        "cabinwright.store>=1.2"
+      ],
+      "tier": "app",
+      "capabilities": {
+        "vehicle": "Shows your battery levels and whether the car is ready",
+        "conditioning": "Starts and stops battery conditioning"
+      },
+      "notes": "First release."
+    }
+  ]
+}
