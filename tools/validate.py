@@ -96,7 +96,7 @@ ID = re.compile(r"^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$")
 REQUIRE = re.compile(r"^([A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*)(?:>=([0-9]+(?:\.[0-9]+)*))?$")
 FIRMWARE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 # APKs the store keeps from app and tweaks packages: only at the top level of the zip
-APK = re.compile(r"^[^/]+\.apk$")
+APK = re.compile(r"^[A-Za-z0-9._-]+\.apk$")
 
 
 # ---------------------------------------------------------------- JSON schema (the subset we use)
