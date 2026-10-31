@@ -630,6 +630,7 @@ NEEDS = {
     "service": re.compile(r"^service:([A-Za-z0-9_.-]+)$"),
     "kill": re.compile(r"^kill:([A-Za-z0-9_.:/-]+)$"),
     "logs": re.compile(r"^logs:([A-Za-z0-9._-]+)$"),
+    "dump": re.compile(r"^dump:([A-Za-z0-9_.:-]+)$"),
     "binder": re.compile(r"^binder:([A-Za-z0-9_./-]+) ([0-9]+(?:,[0-9]+)*)$"),
     "root": re.compile(r"^root$"),
 }
@@ -640,6 +641,7 @@ NEED_FORMS = {
     "service": "service:<name>",
     "kill": "kill:<process>",
     "logs": "logs:<tag>",
+    "dump": "dump:<service>",
     "binder": "binder:<service> <code>[,<code>...]",
     "root": "root",
 }
