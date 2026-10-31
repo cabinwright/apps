@@ -8,6 +8,16 @@
   "category": "tools",
   "versions": [
     {
+      "version": "1.1",
+      "url": "https://github.com/cabinwright/store/releases/download/v1.1/cabinwright.store-v1.1.zip",
+      "sha256": "df96c90a2ead5364b57c6571ac9b030a26219ec17ee93f6a0d7f08e338243102",
+      "firmware": [
+        "*"
+      ],
+      "tier": "system",
+      "notes": "Tweaks can now read a car service's state without full access."
+    },
+    {
       "version": "1.0",
       "url": "https://github.com/cabinwright/store/releases/download/v1.0/cabinwright.store-v1.0.zip",
       "sha256": "c31db342a999b26a58676abe2a5f75ae1844b21c156254ac48c671a97d6dadfc",

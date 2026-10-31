@@ -8,6 +8,22 @@
   "category": "fixes",
   "versions": [
     {
+      "version": "1.1",
+      "url": "https://github.com/cabinwright/tweaks/releases/download/v1.1/cabinwright.tweaks-v1.1.zip",
+      "sha256": "52ed1712ef0859c237c7d9512d8018c74cb42191de2ea8bac5ce941f6d76aacb",
+      "firmware": [
+        "CVEV.USA.0000.V015.012.260507"
+      ],
+      "requires": [
+        "cabinwright.store>=1.1"
+      ],
+      "tier": "tweaks",
+      "capabilities": {
+        "tweaks": "Shows and switches your tweaks"
+      },
+      "notes": "Adds cold-start heat: the wheel and driver's seat come on when it's cold."
+    },
+    {
       "version": "1.0",
       "url": "https://github.com/cabinwright/tweaks/releases/download/v1.0/cabinwright.tweaks-v1.0.zip",
       "sha256": "7115db804a2c6fbfe75bb60ca14b59ae69b4eeceb671ba9185430a073fb59878",
