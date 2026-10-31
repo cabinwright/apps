@@ -65,6 +65,8 @@ CAPABILITIES = {
     "tweaks": "list your tweaks, read their status and log, and switch them",
     "logs": "read the head unit's system log (asks first)",
     "settings": "change the settings and properties on the store's list",
+    "vehicle": "read whether the car is parked and ready, and its battery levels",
+    "conditioning": "start and stop battery conditioning",
     "root": "run commands as root (asks first, every command logged)",
 }
 MARKER = "<!-- cabinwright-apps-review -->"
