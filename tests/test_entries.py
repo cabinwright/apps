@@ -35,10 +35,10 @@ class Entries(unittest.TestCase):
             validate.check_icon(p)
 
     def test_tiers(self):
-        tiers = {p.stem: [v["tier"] for v in json.loads(p.read_text())["versions"]] for p in APPS}
-        self.assertEqual(tiers["cabinwright.store"], ["system"])
-        self.assertEqual(tiers["cabinwright.menu"], ["app"])
-        self.assertEqual(tiers["cabinwright.tweaks"], ["tweaks"])
+        tiers = {p.stem: {v["tier"] for v in json.loads(p.read_text())["versions"]} for p in APPS}
+        self.assertEqual(tiers["cabinwright.store"], {"system"})
+        self.assertEqual(tiers["cabinwright.menu"], {"app"})
+        self.assertEqual(tiers["cabinwright.tweaks"], {"tweaks"})
 
 
 if __name__ == "__main__":
