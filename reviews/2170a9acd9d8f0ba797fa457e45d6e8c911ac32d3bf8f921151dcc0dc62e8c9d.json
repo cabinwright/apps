@@ -1,0 +1,37 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "cabinwright.smarttube",
+  "version": "32.68.7"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "org.smarttube.stable",
+    "version_code": 245807
+   }
+  ],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "smarttube.apk"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": false,
+  "tier": "app",
+  "tweaks": [],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "2170a9acd9d8f0ba797fa457e45d6e8c911ac32d3bf8f921151dcc0dc62e8c9d",
+ "size": 22168852,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}
