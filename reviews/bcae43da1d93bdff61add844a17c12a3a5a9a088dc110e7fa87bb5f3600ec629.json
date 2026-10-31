@@ -1,0 +1,37 @@
+{
+ "errors": [],
+ "flags": [],
+ "nemesis": {
+  "id": "cabinwright.battery",
+  "version": "1.0"
+ },
+ "review": {
+  "apps": [
+   {
+    "package": "app.cabinwright.battery",
+    "version_code": 1
+   }
+  ],
+  "execute": false,
+  "files": [
+   "NEMESIS.data",
+   "battery.apk"
+  ],
+  "hooks": [],
+  "root": [],
+  "root_services": [],
+  "services": [],
+  "sh_entries": [],
+  "system_writes": false,
+  "tier": "app",
+  "tweaks": [],
+  "types": [
+   "application"
+  ]
+ },
+ "sha256": "bcae43da1d93bdff61add844a17c12a3a5a9a088dc110e7fa87bb5f3600ec629",
+ "size": 19817,
+ "system_reasons": [],
+ "tool": 1,
+ "warnings": []
+}
