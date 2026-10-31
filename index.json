@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1006,
-  "generated": "2026-10-31T18:04:39Z",
-  "expires": "2027-01-29T18:04:39Z",
+  "sequence": 1007,
+  "generated": "2026-10-31T18:15:24Z",
+  "expires": "2027-01-29T18:15:24Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -83,41 +83,41 @@
           "capabilities": {},
           "notes": "Apps can now read the car's state and start battery conditioning.",
           "review": {
-            "tier": "system",
-            "types": [
-              "application",
-              "service"
-            ],
-            "files": [
-              "NEMESIS.data",
-              "app/store.apk",
-              "svc/cabinwrightd.jar",
-              "svc/cabinwrightd.sh"
-            ],
             "apps": [
               {
                 "package": "app.cabinwright.store",
                 "version_code": 1
               }
             ],
-            "services": [
-              {
-                "name": "cabinwrightd",
-                "uid": "root",
-                "mode": "restart"
-              }
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "app/store.apk",
+              "svc/cabinwrightd.jar",
+              "svc/cabinwrightd.sh"
+            ],
+            "hooks": [],
+            "root": [
+              "service cabinwrightd"
             ],
             "root_services": [
               "cabinwrightd"
             ],
-            "hooks": [],
-            "sh_entries": [],
-            "tweaks": [],
-            "root": [
-              "service cabinwrightd"
+            "services": [
+              {
+                "mode": "restart",
+                "name": "cabinwrightd",
+                "uid": "root"
+              }
             ],
+            "sh_entries": [],
             "system_writes": false,
-            "execute": false
+            "tier": "system",
+            "tweaks": [],
+            "types": [
+              "application",
+              "service"
+            ]
           }
         },
         {
