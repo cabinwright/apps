@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1004,
-  "generated": "2026-10-31T16:48:36Z",
-  "expires": "2027-01-29T16:48:36Z",
+  "sequence": 1005,
+  "generated": "2026-10-31T17:58:50Z",
+  "expires": "2027-01-29T17:58:50Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -83,41 +83,41 @@
           "capabilities": {},
           "notes": "Tweaks can now read a car service's state without full access.",
           "review": {
-            "tier": "system",
-            "types": [
-              "application",
-              "service"
-            ],
-            "files": [
-              "NEMESIS.data",
-              "app/store.apk",
-              "svc/cabinwrightd.jar",
-              "svc/cabinwrightd.sh"
-            ],
             "apps": [
               {
                 "package": "app.cabinwright.store",
                 "version_code": 1
               }
             ],
-            "services": [
-              {
-                "name": "cabinwrightd",
-                "uid": "root",
-                "mode": "restart"
-              }
+            "execute": false,
+            "files": [
+              "NEMESIS.data",
+              "app/store.apk",
+              "svc/cabinwrightd.jar",
+              "svc/cabinwrightd.sh"
+            ],
+            "hooks": [],
+            "root": [
+              "service cabinwrightd"
             ],
             "root_services": [
               "cabinwrightd"
             ],
-            "hooks": [],
-            "sh_entries": [],
-            "tweaks": [],
-            "root": [
-              "service cabinwrightd"
+            "services": [
+              {
+                "mode": "restart",
+                "name": "cabinwrightd",
+                "uid": "root"
+              }
             ],
+            "sh_entries": [],
             "system_writes": false,
-            "execute": false
+            "tier": "system",
+            "tweaks": [],
+            "types": [
+              "application",
+              "service"
+            ]
           }
         },
         {
@@ -202,10 +202,13 @@
           },
           "notes": "Adds cold-start heat: the wheel and driver's seat come on when it's cold.",
           "review": {
-            "tier": "tweaks",
-            "types": [
-              "application"
+            "apps": [
+              {
+                "package": "app.cabinwright.tweaks",
+                "version_code": 2
+              }
             ],
+            "execute": false,
             "files": [
               "NEMESIS.data",
               "lib/tweakpatch.jar",
@@ -224,28 +227,26 @@
               "tweaks/skip-consent/systemui.lpd",
               "tweaks/skip-consent/tweak.conf"
             ],
-            "apps": [
-              {
-                "package": "app.cabinwright.tweaks",
-                "version_code": 2
-              }
-            ],
-            "services": [],
-            "root_services": [],
             "hooks": [],
+            "root": [],
+            "root_services": [],
+            "services": [],
             "sh_entries": [],
+            "system_writes": true,
+            "tier": "tweaks",
             "tweaks": [
               {
-                "id": "auto-dst",
-                "name": "Automatic daylight saving time",
-                "summary": "Changes the clock for daylight saving time",
-                "description": "Moves the clock forward in March and back in November, so you never have to change it by hand.",
-                "kind": "service",
+                "changes": "settings",
+                "conflicts": [],
                 "default": "on",
+                "description": "Moves the clock forward in March and back in November, so you never have to change it by hand.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "auto-dst",
+                "kind": "service",
+                "name": "Automatic daylight saving time",
                 "needs": [
                   {
                     "need": "binder:com.hkmc.micom.time 3,4",
@@ -256,20 +257,20 @@
                     "reason": "Keep the \"Daylight saving time\" switch in the clock settings in step"
                   }
                 ],
-                "changes": "settings",
-                "disable": true
+                "summary": "Changes the clock for daylight saving time"
               },
               {
-                "id": "coldstart-heat",
-                "name": "Cold-start heat",
-                "summary": "Turns on the heated wheel and driver's seat when it's cold",
-                "description": "When the head unit starts and it's below 50\u00b0F outside, turns on the heated steering wheel and the driver's seat. Switching the car off and on doesn't always restart the head unit, so it may not run on every drive.",
-                "kind": "service",
+                "changes": "settings",
+                "conflicts": [],
                 "default": "off",
+                "description": "When the head unit starts and it's below 50\u00b0F outside, turns on the heated steering wheel and the driver's seat. Switching the car off and on doesn't always restart the head unit, so it may not run on every drive.",
+                "disable": false,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "coldstart-heat",
+                "kind": "service",
+                "name": "Cold-start heat",
                 "needs": [
                   {
                     "need": "dump:com.hkmc.micom.datc",
@@ -284,20 +285,20 @@
                     "reason": "Turn on the heated driver's seat"
                   }
                 ],
-                "changes": "settings",
-                "disable": false
+                "summary": "Turns on the heated wheel and driver's seat when it's cold"
               },
               {
-                "id": "skip-consent",
-                "name": "Skip start-up screen",
-                "summary": "Goes straight to the home screen when you start the car",
-                "description": "Skips the screen you have to confirm every time you start the car. Takes effect after the head unit restarts, and turning it off brings the screen back.",
-                "kind": "oneshot",
+                "changes": "files",
+                "conflicts": [],
                 "default": "off",
+                "description": "Skips the screen you have to confirm every time you start the car. Takes effect after the head unit restarts, and turning it off brings the screen back.",
+                "disable": true,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "skip-consent",
+                "kind": "oneshot",
+                "name": "Skip start-up screen",
                 "needs": [
                   {
                     "need": "file:/system/priv-app/SystemUI.apk@512fa1835649e710d91deeb37c90433d",
@@ -308,13 +309,12 @@
                     "reason": "Replace the ready-to-run copy of that software to match"
                   }
                 ],
-                "changes": "files",
-                "disable": true
+                "summary": "Goes straight to the home screen when you start the car"
               }
             ],
-            "root": [],
-            "system_writes": true,
-            "execute": false
+            "types": [
+              "application"
+            ]
           }
         },
         {
