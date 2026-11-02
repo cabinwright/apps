@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "sequence": 1012,
-  "generated": "2026-10-31T21:35:45Z",
-  "expires": "2027-01-29T21:35:45Z",
+  "sequence": 1013,
+  "generated": "2026-11-02T13:40:09Z",
+  "expires": "2027-01-31T13:40:09Z",
   "key_id": "cabinwright-2026a",
   "apps": [
     {
@@ -36,10 +36,13 @@
           },
           "notes": "Fixes the app showing no data.",
           "review": {
-            "tier": "tweaks",
-            "types": [
-              "application"
+            "apps": [
+              {
+                "package": "app.cabinwright.battery",
+                "version_code": 3
+              }
             ],
+            "execute": false,
             "files": [
               "NEMESIS.data",
               "battery.apk",
@@ -47,28 +50,26 @@
               "tweaks/battery-log/run.sh",
               "tweaks/battery-log/tweak.conf"
             ],
-            "apps": [
-              {
-                "package": "app.cabinwright.battery",
-                "version_code": 3
-              }
-            ],
-            "services": [],
-            "root_services": [],
             "hooks": [],
+            "root": [],
+            "root_services": [],
+            "services": [],
             "sh_entries": [],
+            "system_writes": false,
+            "tier": "tweaks",
             "tweaks": [
               {
-                "id": "battery-log",
-                "name": "Battery history",
-                "summary": "Keeps the last six hours of battery temperature",
-                "description": "Reads the battery's temperature once a minute while the head unit is on, for the graph in the Battery app. It stays on the head unit and isn't sent anywhere.",
-                "kind": "service",
+                "changes": "settings",
+                "conflicts": [],
                 "default": "on",
+                "description": "Reads the battery's temperature once a minute while the head unit is on, for the graph in the Battery app. It stays on the head unit and isn't sent anywhere.",
+                "disable": false,
                 "firmware": [
                   "CVEV.USA.0000.V015.012.260507"
                 ],
-                "conflicts": [],
+                "id": "battery-log",
+                "kind": "service",
+                "name": "Battery history",
                 "needs": [
                   {
                     "need": "binder:com.hkmc.micom.cluster 37,38,109",
@@ -79,13 +80,12 @@
                     "reason": "See whether the battery is being conditioned"
                   }
                 ],
-                "changes": "settings",
-                "disable": false
+                "summary": "Keeps the last six hours of battery temperature"
               }
             ],
-            "root": [],
-            "system_writes": false,
-            "execute": false
+            "types": [
+              "application"
+            ]
           }
         },
         {
